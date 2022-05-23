@@ -5,7 +5,16 @@ require('@nomiclabs/hardhat-solhint')
 require('hardhat-gas-reporter')
 require('solidity-coverage')
 
-task(...require('./tasks/accounts'))
+const taskWrap = (taskFunc, taskInfo) => {
+  const definition = taskFunc(taskInfo.name, taskInfo.describtion)
+  taskInfo.params?.forEach((i) => {
+    definition.addParam(i.name, i.describtion, i.defaultValue, i.type)
+  })
+  definition.setAction(taskInfo.action)
+}
+
+taskWrap(task, require('./tasks/accounts'))
+taskWrap(task, require('./tasks/balances'))
 
 module.exports = {
   networks: {
