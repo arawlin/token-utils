@@ -1,7 +1,6 @@
+**/.DS_Store
 node_modules
 package-lock.json
-.env
-.env.*
 coverage
 coverage.json
 typechain
@@ -9,3 +8,6 @@ typechain
 #Hardhat files
 cache
 artifacts
+
+.env
+.env.*

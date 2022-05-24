@@ -2,8 +2,10 @@ require('dotenv').config()
 
 require('@nomiclabs/hardhat-waffle')
 require('@nomiclabs/hardhat-solhint')
-require('hardhat-gas-reporter')
+// require('hardhat-gas-reporter')
 require('solidity-coverage')
+
+console.log('env -------------- ', process.env.NAME)
 
 const taskWrap = (taskFunc, taskInfo) => {
   const definition = taskFunc(taskInfo.name, taskInfo.describtion)
@@ -17,15 +19,17 @@ taskWrap(task, require('./tasks/accounts'))
 taskWrap(task, require('./tasks/balances'))
 
 module.exports = {
+  defaultNetwork: 'mainnet',
   networks: {
-    main: {
+    mainnet: {
+      chainId: Number(process.env.ID_CHAIN),
       url: process.env.URL_RPC,
     },
   },
-  gasReporter: {
-    enabled: true,
-    currency: 'USD',
-  },
+  // gasReporter: {
+  //   enabled: true,
+  //   currency: 'USD',
+  // },
   solidity: {
     version: '0.8.4',
     settings: {
