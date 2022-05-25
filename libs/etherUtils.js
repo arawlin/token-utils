@@ -51,6 +51,30 @@ const loadWalletsBalance = async (ethers, dir, pass, over = 0) => {
   return wss
 }
 
+const loadWalletsBalanceAll = async (ethers, dir, pass, token) => {
+  console.log('loadWalletsBalanceAll --------- ')
+
+  let total = ethers.BigNumber.from('0')
+  let totalToken = ethers.BigNumber.from('0')
+  const wss = await loadWallets(ethers, dir, pass, async (w, i, f) => {
+    const b = await logBalance(ethers, w, `${i} -`)
+    total = total.add(b)
+
+    if (token) {
+      const bt = await logBalanceToken(ethers, token, w, `${i} token -`)
+      totalToken = totalToken.add(bt)
+    }
+
+    return true
+  })
+  console.log(
+    `loadWalletsBalanceAll - count: ${wss.length}, total: ${ethers.utils.formatEther(
+      total,
+    )}, totalToken: ${ethers.utils.formatEther(totalToken)}`,
+  )
+  return wss
+}
+
 const loadWalletsBalanceSyn = async (ethers, dir, pass, over = 0) => {
   console.log('loadWalletsBalanceSyn --------- ')
 
@@ -79,9 +103,17 @@ const logBalance = async (ethers, signer, label = '') => {
   return bal
 }
 
+const logBalanceToken = async (ethers, contract, signer, label = '') => {
+  const bal = await contract.balanceOf(signer.address)
+  console.log(label, signer.address, ethers.utils.formatEther(bal))
+  return bal
+}
+
 module.exports = {
   loadWallets,
   loadWalletsBalance,
+  loadWalletsBalanceAll,
   loadWalletsBalanceSyn,
   logBalance,
+  logBalanceToken,
 }

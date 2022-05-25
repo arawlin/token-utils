@@ -1,15 +1,22 @@
 const path = require('path')
+const abiUSDT = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
 const { DIR_RES_KEYSTORES } = require('../constants')
 const utils = require('../libs/etherUtils')
 
 const action = async ({ d, p, t }, { ethers }) => {
   const dir = path.join(DIR_RES_KEYSTORES, d || process.env.DIR_KEYSTORE)
   const pass = p || process.env.PASS_KEYSTORE
+  const token = t || process.env.TOKEN_USDT
   if (!pass) {
     throw new Error('params error')
   }
 
-  await utils.loadWalletsBalance(ethers, dir, pass)
+  let tt
+  if (token) {
+    tt = new ethers.Contract(token, abiUSDT, ethers.provider)
+  }
+
+  await utils.loadWalletsBalanceAll(ethers, dir, pass, tt)
 }
 
 module.exports = {

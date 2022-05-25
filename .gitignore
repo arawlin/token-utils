@@ -12,3 +12,4 @@ artifacts
 .env
 .env.*
 resources/keystores/**/*
+**/*.log
