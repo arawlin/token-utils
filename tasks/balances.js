@@ -1,5 +1,5 @@
 const path = require('path')
-const abiUSDT = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
+const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
 const { DIR_RES_KEYSTORES } = require('../constants')
 const utils = require('../libs/etherUtils')
 
@@ -13,7 +13,7 @@ const action = async ({ d, p, t }, { ethers }) => {
 
   let tt
   if (token) {
-    tt = new ethers.Contract(token, abiUSDT, ethers.provider)
+    tt = new ethers.Contract(token, abiERC20, ethers.provider)
   }
 
   await utils.loadWalletsBalanceAll(ethers, dir, pass, tt)
