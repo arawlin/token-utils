@@ -28,7 +28,7 @@ const loadWallets = async (ethers, dir, pass, deal) => {
         ws.push(w)
       }
     } catch (e) {
-      console.error(e)
+      console.error(`${fn} - ${e}`)
     }
   }
   console.log('loadWallets --------- count:', ws.length)
@@ -54,14 +54,16 @@ const loadWalletsBalance = async (ethers, dir, pass, over = 0) => {
 const loadWalletsBalanceAll = async (ethers, dir, pass, token) => {
   console.log('loadWalletsBalanceAll --------- ')
 
+  const decimals = (token && (await token.decimals())) ?? 18
+
   let total = ethers.BigNumber.from('0')
   let totalToken = ethers.BigNumber.from('0')
   const wss = await loadWallets(ethers, dir, pass, async (w, i, f) => {
-    const b = await logBalance(ethers, w, `${i} -`)
+    const b = await logBalance(ethers, w, `${i} - ${f} -`)
     total = total.add(b)
 
     if (token) {
-      const bt = await logBalanceToken(ethers, token, w, `${i} token -`)
+      const bt = await logBalanceToken(ethers, token, w, `${i} token -`, decimals)
       totalToken = totalToken.add(bt)
     }
 
@@ -103,9 +105,9 @@ const logBalance = async (ethers, signer, label = '') => {
   return bal
 }
 
-const logBalanceToken = async (ethers, contract, signer, label = '') => {
+const logBalanceToken = async (ethers, contract, signer, label = '', decimals = 18) => {
   const bal = await contract.balanceOf(signer.address)
-  console.log(label, signer.address, ethers.utils.formatEther(bal))
+  console.log(label, signer.address, ethers.utils.formatUnits(bal, decimals))
   return bal
 }
 
