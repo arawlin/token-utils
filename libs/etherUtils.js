@@ -111,6 +111,13 @@ const logBalanceToken = async (ethers, contract, signer, label = '', decimals = 
   return bal
 }
 
+const transfer = async (ethers, signer, to, value) => {
+  const req = { to, value }
+  const res = await signer.sendTransaction(req)
+  const rec = await res.wait()
+  console.log(req, res, rec)
+}
+
 module.exports = {
   loadWallets,
   loadWalletsBalance,
@@ -118,4 +125,6 @@ module.exports = {
   loadWalletsBalanceSyn,
   logBalance,
   logBalanceToken,
+
+  transfer,
 }
