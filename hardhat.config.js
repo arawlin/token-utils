@@ -17,9 +17,11 @@ const taskWrap = (taskFunc, taskInfo) => {
 
 taskWrap(task, require('./tasks/accounts'))
 taskWrap(task, require('./tasks/balances'))
+taskWrap(task, require('./tasks/transfer'))
+taskWrap(task, require('./tasks/transferAll'))
 
 module.exports = {
-  defaultNetwork: 'mainnet',
+  defaultNetwork: 'hardhat',
   networks: {
     mainnet: {
       chainId: Number(process.env.ID_CHAIN),
