@@ -40,7 +40,7 @@ const loadWalletsBalance = async (ethers, dir, pass, over = 0) => {
 
   let total = ethers.BigNumber.from('0')
   const wss = await loadWallets(ethers, dir, pass, async (w, i, f) => {
-    const b = await logBalance(ethers, w, `${i} - ${f} -`)
+    const b = await logBalance(ethers, w.address, `${i} - ${f} -`)
     const include = b.gte(ethers.BigNumber.from(over))
     if (include) {
       total = total.add(b)
@@ -59,11 +59,11 @@ const loadWalletsBalanceAll = async (ethers, dir, pass, token) => {
   let total = ethers.BigNumber.from('0')
   let totalToken = ethers.BigNumber.from('0')
   const wss = await loadWallets(ethers, dir, pass, async (w, i, f) => {
-    const b = await logBalance(ethers, w, `${i} - ${f} -`)
+    const b = await logBalance(ethers, w.address, `${i} - ${f} -`)
     total = total.add(b)
 
     if (token) {
-      const bt = await logBalanceToken(ethers, token, w, `${i} token -`, decimals)
+      const bt = await logBalanceToken(ethers, token, w.address, `${i} token -`, decimals)
       totalToken = totalToken.add(bt)
     }
 
@@ -86,7 +86,7 @@ const loadWalletsBalanceSyn = async (ethers, dir, pass, over = 0) => {
   const ws = await loadWallets(ethers, dir, pass)
   for (let i = 0; i < ws.length; ++i) {
     const w = ws[i]
-    const b = await logBalance(ethers, w, i + ' - ')
+    const b = await logBalance(ethers, w.address, i + ' -')
     if (b.lt(ethers.BigNumber.from(over))) {
       console.log('less over', over)
       continue
@@ -99,15 +99,15 @@ const loadWalletsBalanceSyn = async (ethers, dir, pass, over = 0) => {
   return wss
 }
 
-const logBalance = async (ethers, signer, label = '') => {
-  const bal = await signer.getBalance()
-  console.log(label, signer.address, ethers.utils.formatEther(bal))
+const logBalance = async (ethers, address, label = '') => {
+  const bal = await ethers.provider.getBalance(address)
+  console.log(label, address, ethers.utils.formatEther(bal))
   return bal
 }
 
-const logBalanceToken = async (ethers, contract, signer, label = '', decimals = 18) => {
-  const bal = await contract.balanceOf(signer.address)
-  console.log(label, signer.address, ethers.utils.formatUnits(bal, decimals))
+const logBalanceToken = async (ethers, contract, address, label = '', decimals = 18) => {
+  const bal = await contract.balanceOf(address)
+  console.log(label, address, ethers.utils.formatUnits(bal, decimals))
   return bal
 }
 
