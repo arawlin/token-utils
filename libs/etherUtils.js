@@ -91,9 +91,7 @@ const loadWalletsBalanceAll = async (ethers, dir, pass, token) => {
     return 1
   })
   console.log(
-    `loadWalletsBalanceAll - count: ${wss.length}, total: ${ethers.utils.formatEther(
-      total,
-    )}, totalToken: ${ethers.utils.formatUnits(totalToken, decimals)}`,
+    `loadWalletsBalanceAll - count: ${wss.length}, total: ${ethers.utils.formatEther(total)}, totalToken: ${ethers.utils.formatUnits(totalToken, decimals)}`,
   )
   return wss
 }
@@ -133,8 +131,13 @@ const logBalanceToken = async (ethers, contract, address, label = '', decimals =
 }
 
 const transfer = async (ethers, signer, to, value) => {
-  await logBalance(ethers, signer.address, 'from -')
+  const bal = await logBalance(ethers, signer.address, 'from -')
   await logBalance(ethers, to, 'to -')
+
+  if (bal.lt(value)) {
+    console.log(`not enough balance ${ethers.utils.formatEther(bal)} - ${ethers.utils.formatEther(value)}`)
+    return
+  }
 
   const req = { to, value }
   const res = await signer.sendTransaction(req)
@@ -146,8 +149,13 @@ const transfer = async (ethers, signer, to, value) => {
 }
 
 const transferToken = async (ethers, contract, signer, to, amount, decimals = 18) => {
-  await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
+  const bal = await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
   await logBalanceToken(ethers, contract, to, 'to -', decimals)
+
+  if (bal.lt(amount)) {
+    console.log(`not enough balance ${ethers.utils.formatUnits(bal, decimals)} - ${ethers.utils.formatUnits(amount, decimals)}`)
+    return
+  }
 
   contract = contract.connect(signer)
   const res = await contract.transfer(to, amount)
