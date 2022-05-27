@@ -2,6 +2,28 @@ const fs = require('fs/promises')
 const path = require('path')
 const { DEBUG } = require('./constants')
 
+const loadWalletOne = async (ethers, dir, pass, address) => {
+  let wallet
+  await loadWallets(ethers, dir, pass, async (w, i) => {
+    if (w.address.toLowerCase() === address.toLowerCase()) {
+      console.log(i, w.address)
+      wallet = w
+      return 2
+    }
+    return 0
+  })
+  return wallet
+}
+
+/**
+ * load all wallets in keystore dir
+ *
+ * @param {*} ethers
+ * @param {*} dir
+ * @param {*} pass
+ * @param {*} deal - async (wallet, idx, keystoreFileName) => Promise<Number> - 0: not include, 1: include, 2: break loading loop
+ * @returns the promise of the array of wallets
+ */
 const loadWallets = async (ethers, dir, pass, deal) => {
   console.log('loadWallets --------- ', dir)
 
@@ -20,13 +42,11 @@ const loadWallets = async (ethers, dir, pass, deal) => {
       let w = await ethers.Wallet.fromEncryptedJson(ct, pass)
       w = w.connect(ethers.provider)
 
-      let include = true
-      if (deal) {
-        include = await deal(w, idx, fn)
-      }
-
-      if (include) {
+      const res = (await deal(w, idx, fn)) ?? 0
+      if (res === 1) {
         ws.push(w)
+      } else if (res === 2) {
+        break
       }
     } catch (e) {
       console.error(`${fn} - ${e}`)
@@ -125,7 +145,21 @@ const transfer = async (ethers, signer, to, value) => {
   await logBalance(ethers, to, 'to -')
 }
 
+const transferToken = async (ethers, contract, signer, to, amount, decimals = 18) => {
+  await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
+  await logBalanceToken(ethers, contract, to, 'to -', decimals)
+
+  contract = contract.connect(signer)
+  const res = await contract.transfer(to, amount)
+  const rec = await res.wait()
+  DEBUG && console.log(res, rec)
+
+  await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
+  await logBalanceToken(ethers, contract, to, 'to -', decimals)
+}
+
 module.exports = {
+  loadWalletOne,
   loadWallets,
   loadWalletsBalance,
   loadWalletsBalanceAll,
@@ -134,4 +168,5 @@ module.exports = {
   logBalanceToken,
 
   transfer,
+  transferToken,
 }
