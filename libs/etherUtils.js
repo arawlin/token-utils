@@ -1,5 +1,6 @@
 const fs = require('fs/promises')
 const path = require('path')
+const { DEBUG } = require('./constants')
 
 const loadWallets = async (ethers, dir, pass, deal) => {
   console.log('loadWallets --------- ', dir)
@@ -112,10 +113,16 @@ const logBalanceToken = async (ethers, contract, address, label = '', decimals =
 }
 
 const transfer = async (ethers, signer, to, value) => {
+  await logBalance(ethers, signer.address, 'from -')
+  await logBalance(ethers, to, 'to -')
+
   const req = { to, value }
   const res = await signer.sendTransaction(req)
   const rec = await res.wait()
-  console.log(req, res, rec)
+  DEBUG && console.log(req, res, rec)
+
+  await logBalance(ethers, signer.address, 'from -')
+  await logBalance(ethers, to, 'to -')
 }
 
 module.exports = {
