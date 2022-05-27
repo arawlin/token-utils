@@ -1,6 +1,6 @@
 const path = require('path')
 const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
-const { DIR_RES_KEYSTORES } = require('../constants')
+const { DIR_RES_KEYSTORES } = require('../libs/constants')
 const utils = require('../libs/etherUtils')
 
 const action = async ({ d, p, t, from, to }, { ethers }) => {
@@ -11,7 +11,7 @@ const action = async ({ d, p, t, from, to }, { ethers }) => {
   }
 
   const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
-  await utils.loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {})
+  
 }
 
 module.exports = {
