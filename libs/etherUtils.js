@@ -66,7 +66,7 @@ const loadWalletsBalance = async (ethers, dir, pass, over = 0) => {
     if (include) {
       total = total.add(b)
     }
-    return include
+    return include ? 1 : 0
   })
   console.log(`loadWalletsBalance - count: ${wss.length}, total: ${ethers.utils.formatEther(total)}`)
   return wss
@@ -88,12 +88,12 @@ const loadWalletsBalanceAll = async (ethers, dir, pass, token) => {
       totalToken = totalToken.add(bt)
     }
 
-    return true
+    return 1
   })
   console.log(
     `loadWalletsBalanceAll - count: ${wss.length}, total: ${ethers.utils.formatEther(
       total,
-    )}, totalToken: ${ethers.utils.formatEther(totalToken)}`,
+    )}, totalToken: ${ethers.utils.formatUnits(totalToken, decimals)}`,
   )
   return wss
 }
