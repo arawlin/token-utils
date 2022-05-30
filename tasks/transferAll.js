@@ -11,7 +11,11 @@ const action = async ({ d, p, t, to }, { ethers }) => {
   }
 
   const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
-  await utils.loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {})
+  if (!tt) {
+    await utils.transferAll(ethers, dir, pass, to)
+  } else {
+    await utils.transferTokenAll(ethers, tt, dir, pass, to)
+  }
 }
 
 module.exports = {

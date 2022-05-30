@@ -131,12 +131,13 @@ const logBalanceToken = async (ethers, contract, address, label = '', decimals =
 }
 
 const transfer = async (ethers, signer, to, value) => {
+  console.log('transfer --------- ')
   const bal = await logBalance(ethers, signer.address, 'from -')
   await logBalance(ethers, to, 'to -')
 
   if (bal.lt(value)) {
     console.log(`not enough balance ${ethers.utils.formatEther(bal)} - ${ethers.utils.formatEther(value)}`)
-    return
+    return false
   }
 
   const req = { to, value }
@@ -146,15 +147,18 @@ const transfer = async (ethers, signer, to, value) => {
 
   await logBalance(ethers, signer.address, 'from -')
   await logBalance(ethers, to, 'to -')
+
+  return true
 }
 
 const transferToken = async (ethers, contract, signer, to, amount, decimals = 18) => {
+  console.log('transferToken --------- ')
   const bal = await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
   await logBalanceToken(ethers, contract, to, 'to -', decimals)
 
   if (bal.lt(amount)) {
     console.log(`not enough balance ${ethers.utils.formatUnits(bal, decimals)} - ${ethers.utils.formatUnits(amount, decimals)}`)
-    return
+    return false
   }
 
   contract = contract.connect(signer)
@@ -164,6 +168,77 @@ const transferToken = async (ethers, contract, signer, to, amount, decimals = 18
 
   await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
   await logBalanceToken(ethers, contract, to, 'to -', decimals)
+
+  return true
+}
+
+const transferAll = async (ethers, dir, pass, to) => {
+  console.log('transferAll --------- ')
+
+  await logBalance(ethers, to, 'to -')
+  const mini = ethers.utils.parseEther('0.01')
+
+  // fee
+  const GAS_LIMIT = ethers.BigNumber.from('21000')
+  const GAS_PRICE = await ethers.provider.getGasPrice()
+  const GAS_FEE = GAS_LIMIT.mul(GAS_PRICE)
+  console.log(
+    `GAS_LIMIT: ${GAS_LIMIT.toString()},`,
+    `GAS_PRICE: ${ethers.utils.formatUnits(GAS_PRICE, 'gwei')} gwei,`,
+    `GAS_FEE: ${ethers.utils.formatUnits(GAS_FEE, 'ether')} ether`,
+  )
+
+  let total = ethers.BigNumber.from('0')
+  await loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {
+    try {
+      // balance enough?
+      const bal = await logBalance(ethers, wallet.address, `${idx} -`)
+      const rest = bal.sub(GAS_FEE)
+      if (rest.lt(mini)) {
+        console.log(`rest value less than ${ethers.utils.formatEther(mini)}`)
+        return 0
+      }
+
+      // transfer to
+      const suc = await transfer(ethers, wallet, to, rest)
+      if (!suc) {
+        return 0
+      }
+
+      total = total.add(rest)
+      return 1
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
+  await logBalance(ethers, to, 'to -')
+  console.log(`transferAll --------- total: ${ethers.utils.formatEther(total)}`)
+}
+
+const transferTokenAll = async (ethers, contract, dir, pass, to, excludes = []) => {
+  console.log('transferTokenAll --------- ')
+
+  const decimals = await contract.decimals()
+  await loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {
+    // excluded?
+    if (excludes.includes(wallet.address)) {
+      console.log(`${idx} - ${wallet.address} - is in excludes`)
+      return 0
+    }
+
+    // balance enough?
+    const bal = await logBalanceToken(ethers, contract, wallet.address, `${idx} -`, decimals)
+    if (bal.lte(ethers.BigNumber.from('0'))) {
+      console.log(`${idx} - ${wallet.address} - has not enough balance`)
+      return 0
+    }
+
+    // TODO
+    // fee enough?
+
+    // transfer to
+  })
 }
 
 module.exports = {
@@ -177,4 +252,6 @@ module.exports = {
 
   transfer,
   transferToken,
+  transferAll,
+  transferTokenAll,
 }

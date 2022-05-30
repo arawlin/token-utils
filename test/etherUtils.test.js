@@ -42,4 +42,16 @@ describe('ether utils', () => {
     const ss = await ethers.getSigners()
     await etherUtils.transferToken(ethers, mockToken, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
   })
+
+  it('transferAll', async () => {
+    const d = path.join(DIR_RES_KEYSTORES, 'a')
+    const p = 'oAtsB5UZcrYKvEWK2ByY'
+
+    const sf = await ethers.getSigners()
+    const st = await etherUtils.loadWallets(ethers, d, p, async () => 1)
+
+    await etherUtils.transfer(ethers, sf[1], st[0].address, ethers.utils.parseEther('1'))
+
+    await etherUtils.transferAll(ethers, d, p, sf[1].address)
+  })
 })
