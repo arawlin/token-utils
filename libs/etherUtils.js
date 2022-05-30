@@ -140,7 +140,10 @@ const transfer = async (ethers, signer, to, value) => {
     return false
   }
 
-  const req = { to, value }
+  const gasLimit = ethers.BigNumber.from('21001')
+  const gasPrice = await signer.getGasPrice()
+
+  const req = { to, value, gasPrice, gasLimit }
   const res = await signer.sendTransaction(req)
   const rec = await res.wait()
   DEBUG && console.log(req, res, rec)
@@ -179,7 +182,7 @@ const transferAll = async (ethers, dir, pass, to) => {
   const mini = ethers.utils.parseEther('0.01')
 
   // fee
-  const GAS_LIMIT = ethers.BigNumber.from('21000')
+  const GAS_LIMIT = ethers.BigNumber.from('21001')
   const GAS_PRICE = await ethers.provider.getGasPrice()
   const GAS_FEE = GAS_LIMIT.mul(GAS_PRICE)
   console.log(
