@@ -197,11 +197,11 @@ const transferToken = async (ethers, contract, signer, to, amount, decimals = 18
   return true
 }
 
-const transferAll = async (ethers, dir, pass, to) => {
+const transferAll = async (ethers, dir, pass, to, miniValue = '0.01') => {
   console.log('transferAll --------- ')
 
   await logBalance(ethers, to, 'to -')
-  const mini = ethers.utils.parseEther('0.01')
+  const mini = ethers.utils.parseEther(miniValue)
 
   // fee
   const feeData = await ethers.provider.getFeeData()
@@ -217,12 +217,16 @@ const transferAll = async (ethers, dir, pass, to) => {
 
   let total = ethers.BigNumber.from('0')
   await loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {
+    if (wallet.address.toLowerCase() === to.toLowerCase()) {
+      return 1
+    }
+
     try {
       // balance enough?
       const bal = await logBalance(ethers, wallet.address, `${idx} -`)
       const rest = bal.sub(GAS_FEE)
       if (rest.lt(mini)) {
-        console.log(`rest value less than ${ethers.utils.formatEther(mini)}`)
+        console.log(`rest value less than ${miniValue}`)
         return 0
       }
 
@@ -243,11 +247,16 @@ const transferAll = async (ethers, dir, pass, to) => {
   console.log(`transferAll --------- total: ${ethers.utils.formatEther(total)}`)
 }
 
-const transferTokenAll = async (ethers, contract, dir, pass, to, excludes = []) => {
+const transferTokenAll = async (ethers, contract, dir, pass, to, miniAmount = '0', excludes = []) => {
   console.log('transferTokenAll --------- ')
 
+  const mini = ethers.BigNumber.from(miniAmount)
   const decimals = await contract.decimals()
   await loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {
+    if (wallet.address.toLowerCase() === to.toLowerCase()) {
+      return 1
+    }
+
     // excluded?
     if (excludes.includes(wallet.address)) {
       console.log(`${idx} - ${wallet.address} - is in excludes`)
@@ -256,8 +265,8 @@ const transferTokenAll = async (ethers, contract, dir, pass, to, excludes = []) 
 
     // balance enough?
     const bal = await logBalanceToken(ethers, contract, wallet.address, `${idx} -`, decimals)
-    if (bal.lte(ethers.BigNumber.from('0'))) {
-      console.log(`${idx} - ${wallet.address} - has not enough balance`)
+    if (bal.lte(mini)) {
+      console.log(`${idx} - ${wallet.address} - has not enough balance ${miniAmount}`)
       return 0
     }
 

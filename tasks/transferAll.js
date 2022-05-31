@@ -12,9 +12,9 @@ const action = async ({ d, p, t, to }, { ethers }) => {
 
   const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
   if (!tt) {
-    await utils.transferAll(ethers, dir, pass, to)
+    await utils.transferAll(ethers, dir, pass, to, '0.01')
   } else {
-    await utils.transferTokenAll(ethers, tt, dir, pass, to)
+    await utils.transferTokenAll(ethers, tt, dir, pass, to, '10')
   }
 }
 
