@@ -2,6 +2,19 @@ const fs = require('fs/promises')
 const path = require('path')
 const { DEBUG } = require('./constants')
 
+const createWallets = async (ethers, dir, pass, number) => {
+  console.log('createWallets ---------- ')
+
+  for (let i = 0; i < number; ++i) {
+    const w = ethers.Wallet.createRandom()
+    const k = await w.encrypt(pass)
+    const n = `${new Date().toISOString()}-${w.address}`
+    await fs.writeFile(path.join(dir, n), k)
+
+    console.log(`${w.address} - ${i}`)
+  }
+}
+
 const loadWalletOne = async (ethers, dir, pass, address) => {
   let wallet
   await loadWallets(ethers, dir, pass, async (w, i) => {
@@ -34,8 +47,6 @@ const loadWallets = async (ethers, dir, pass, deal) => {
     // if (!fn.endsWith('.keystore')) {
     //   continue
     // }
-
-    ++idx
     try {
       const ct = await fs.readFile(path.join(dir, fn), { encoding: 'utf-8' })
 
@@ -51,6 +62,7 @@ const loadWallets = async (ethers, dir, pass, deal) => {
     } catch (e) {
       console.error(`${fn} - ${e}`)
     }
+    ++idx
   }
   console.log('loadWallets --------- count:', ws.length)
   return ws
@@ -102,7 +114,7 @@ const loadWalletsBalanceSyn = async (ethers, dir, pass, over = 0) => {
   let total = ethers.BigNumber.from('0')
 
   const wss = []
-  const ws = await loadWallets(ethers, dir, pass)
+  const ws = await loadWallets(ethers, dir, pass, async () => 1)
   for (let i = 0; i < ws.length; ++i) {
     const w = ws[i]
     const b = await logBalance(ethers, w.address, i + ' -')
@@ -245,11 +257,14 @@ const transferTokenAll = async (ethers, contract, dir, pass, to, excludes = []) 
 }
 
 module.exports = {
+  createWallets,
+
   loadWalletOne,
   loadWallets,
   loadWalletsBalance,
   loadWalletsBalanceAll,
   loadWalletsBalanceSyn,
+
   logBalance,
   logBalanceToken,
 

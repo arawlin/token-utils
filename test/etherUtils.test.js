@@ -1,8 +1,11 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
 const path = require('path')
-const etherUtils = require('../libs/etherUtils')
+const utils = require('../libs/etherUtils')
 const { DIR_RES_KEYSTORES } = require('../libs/constants')
+
+const dir = path.join(DIR_RES_KEYSTORES, 'test')
+const pass = 'Qwe456'
 
 describe('ether utils', () => {
   let mockToken
@@ -15,43 +18,41 @@ describe('ether utils', () => {
     console.log('mock token', mockToken.address, ethers.utils.formatEther(await mockToken.totalSupply()))
   })
 
-  it.skip('loadWallets', async () => {
-    const d = path.join(DIR_RES_KEYSTORES, 'a')
-    const p = 'oAtsB5UZcrYKvEWK2ByY'
+  it.skip('createWallets', async () => {
+    await utils.createWallets(ethers, dir, pass, 3)
+  })
 
+  it.skip('loadWallets', async () => {
+    const dir = path.join(DIR_RES_KEYSTORES, 'test-load')
     const notInclude = async () => 0
-    expect((await etherUtils.loadWallets(ethers, d, p, notInclude)).length).be.equal(0)
+    expect((await utils.loadWallets(ethers, dir, pass, notInclude)).length).be.equal(0)
 
     const allInclude = async () => 1
-    expect((await etherUtils.loadWallets(ethers, d, p, allInclude)).length).be.equal(3)
+    expect((await utils.loadWallets(ethers, dir, pass, allInclude)).length).be.equal(3)
 
-    const addrBreak = '0x0aa0142d140da685830f0a7327616c4d42455967'
     const breakish = async (w, i) => {
       console.log(i, w.address)
-      return w.address.toLowerCase() === addrBreak ? 2 : 1
+      return i === 1 ? 2 : 1
     }
-    expect((await etherUtils.loadWallets(ethers, d, p, breakish)).length).be.equal(1)
+    expect((await utils.loadWallets(ethers, dir, pass, breakish)).length).be.equal(1)
   })
 
   it.skip('transfer', async () => {
     const ss = await ethers.getSigners()
-    await etherUtils.transfer(ethers, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
+    await utils.transfer(ethers, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
   })
 
   it.skip('transferToken', async () => {
     const ss = await ethers.getSigners()
-    await etherUtils.transferToken(ethers, mockToken, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
+    await utils.transferToken(ethers, mockToken, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
   })
 
-  it('transferAll', async () => {
-    const d = path.join(DIR_RES_KEYSTORES, 'a')
-    const p = 'oAtsB5UZcrYKvEWK2ByY'
-
+  it.skip('transferAll', async () => {
     const sf = await ethers.getSigners()
-    const st = await etherUtils.loadWallets(ethers, d, p, async () => 1)
+    const st = await utils.loadWallets(ethers, dir, pass, async () => 1)
 
-    await etherUtils.transfer(ethers, sf[1], st[0].address, ethers.utils.parseEther('1'))
+    await utils.transfer(ethers, sf[1], st[0].address, ethers.utils.parseEther('1'))
 
-    await etherUtils.transferAll(ethers, d, p, sf[1].address)
+    await utils.transferAll(ethers, dir, pass, sf[1].address)
   })
 })
