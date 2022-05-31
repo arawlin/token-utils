@@ -11,10 +11,25 @@ const action = async ({ d, p, t, from, to, amount }, { ethers }) => {
   }
 
   const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
-  const amountRaw = ethers.parseEth(amount)
+  let amountRaw = ethers.utils.parseEther(amount)
 
   const signer = await utils.loadWalletOne(ethers, dir, pass, from)
+  if (!signer) {
+    throw new Error(`param --from ${from} not found`)
+  }
+
   if (!tt) {
+    // if amount is 0, then transfer the rest balance
+    if (amountRaw.lte(ethers.BigNumber.from('0'))) {
+      const feeData = await ethers.provider.getFeeData()
+      const GAS_LIMIT = ethers.BigNumber.from('21001')
+      const GAS_FEE = GAS_LIMIT.mul(feeData.maxFeePerGas)
+
+      const bal = await utils.logBalance(ethers, from)
+
+      amountRaw = bal.sub(GAS_FEE)
+    }
+
     await utils.transfer(ethers, signer, to, amountRaw)
   } else {
     const decimals = await tt.decimals()

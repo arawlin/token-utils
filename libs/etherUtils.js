@@ -16,15 +16,19 @@ const createWallets = async (ethers, dir, pass, number) => {
 }
 
 const loadWalletOne = async (ethers, dir, pass, address) => {
+  console.log('loadWalletOne 1 --------- ', dir)
+
   let wallet
-  await loadWallets(ethers, dir, pass, async (w, i) => {
-    if (w.address.toLowerCase() === address.toLowerCase()) {
-      console.log(i, w.address)
-      wallet = w
-      return 2
+  const files = await fs.readdir(dir)
+  for (const fn of files) {
+    if (fn.toLocaleLowerCase().indexOf(address.toLocaleLowerCase().slice('0x'.length)) === -1) {
+      continue
     }
-    return 0
-  })
+    const ct = await fs.readFile(path.join(dir, fn), { encoding: 'utf-8' })
+    wallet = await ethers.Wallet.fromEncryptedJson(ct, pass)
+    wallet = wallet.connect(ethers.provider)
+  }
+  console.log('loadWalletOne 2 --------- ', wallet?.address)
   return wallet
 }
 
@@ -132,13 +136,13 @@ const loadWalletsBalanceSyn = async (ethers, dir, pass, over = 0) => {
 
 const logBalance = async (ethers, address, label = '') => {
   const bal = await ethers.provider.getBalance(address)
-  console.log(label, address, ethers.utils.formatEther(bal))
+  label && console.log(label, address, ethers.utils.formatEther(bal))
   return bal
 }
 
 const logBalanceToken = async (ethers, contract, address, label = '', decimals = 18) => {
   const bal = await contract.balanceOf(address)
-  console.log(label, address, ethers.utils.formatUnits(bal, decimals))
+  label && console.log(label, address, ethers.utils.formatUnits(bal, decimals))
   return bal
 }
 
@@ -153,9 +157,15 @@ const transfer = async (ethers, signer, to, value) => {
   }
 
   const gasLimit = ethers.BigNumber.from('21001')
-  const gasPrice = await signer.getGasPrice()
+  const feeData = await signer.provider.getFeeData()
+  console.log(
+    `from: ${signer.address}, to: ${to}, value: ${ethers.utils.formatEther(value)}`,
+    `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
+    `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
+    `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
+  )
 
-  const req = { to, value, gasPrice, gasLimit }
+  const req = { to, value, gasLimit, maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas }
   const res = await signer.sendTransaction(req)
   const rec = await res.wait()
   DEBUG && console.log(req, res, rec)
@@ -194,12 +204,14 @@ const transferAll = async (ethers, dir, pass, to) => {
   const mini = ethers.utils.parseEther('0.01')
 
   // fee
+  const feeData = await ethers.provider.getFeeData()
   const GAS_LIMIT = ethers.BigNumber.from('21001')
-  const GAS_PRICE = await ethers.provider.getGasPrice()
-  const GAS_FEE = GAS_LIMIT.mul(GAS_PRICE)
+  const GAS_FEE = GAS_LIMIT.mul(feeData.maxFeePerGas)
   console.log(
     `GAS_LIMIT: ${GAS_LIMIT.toString()},`,
-    `GAS_PRICE: ${ethers.utils.formatUnits(GAS_PRICE, 'gwei')} gwei,`,
+    `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
+    `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
+    `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
     `GAS_FEE: ${ethers.utils.formatUnits(GAS_FEE, 'ether')} ether`,
   )
 
