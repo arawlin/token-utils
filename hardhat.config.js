@@ -10,7 +10,11 @@ console.log('env -------------- ', process.env.NAME)
 const taskWrap = (taskFunc, taskInfo) => {
   const definition = taskFunc(taskInfo.name, taskInfo.describtion)
   taskInfo.params?.forEach((i) => {
-    definition.addParam(i.name, i.describtion, i.defaultValue, i.type)
+    if (!i.paramType) {
+      definition.addParam(i.name, i.describtion, i.defaultValue, i.valueType)
+    } else if (i.paramType === 'flag') {
+      definition.addFlag(i.name, i.describtion)
+    }
   })
   definition.setAction(taskInfo.action)
 }
