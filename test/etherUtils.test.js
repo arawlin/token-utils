@@ -1,6 +1,8 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
 const path = require('path')
+
+const fixtures = require('./fixtures')
 const utils = require('../libs/etherUtils')
 const { DIR_RES_KEYSTORES } = require('../libs/constants')
 
@@ -8,16 +10,6 @@ const dir = path.join(DIR_RES_KEYSTORES, 'test')
 const pass = 'Qwe456'
 
 describe('ether utils', () => {
-  let mockToken
-
-  before(async () => {
-    const MockToken = await ethers.getContractFactory('MockToken')
-    mockToken = await MockToken.deploy('Mock Token', 'MT', ethers.utils.parseEther('1000000'))
-    await mockToken.deployed()
-
-    console.log('mock token', mockToken.address, ethers.utils.formatEther(await mockToken.totalSupply()))
-  })
-
   it.skip('createWallets', async () => {
     await utils.createWallets(ethers, dir, pass, 3)
   })
@@ -44,6 +36,7 @@ describe('ether utils', () => {
 
   it.skip('transferToken', async () => {
     const ss = await ethers.getSigners()
+    const mockToken = await fixtures.loadMockToken('1000000')
     await utils.transferToken(ethers, mockToken, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
   })
 
