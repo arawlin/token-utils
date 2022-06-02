@@ -33,6 +33,12 @@ const action = async ({ d, p, t, from, to, amount }, { ethers }) => {
     await utils.transfer(ethers, signer, to, amountRaw)
   } else {
     const decimals = await tt.decimals()
+
+    // if amount is 0, then transfer the rest balance
+    if (amountRaw.lte(ethers.BigNumber.from('0'))) {
+      amountRaw = await utils.logBalanceToken(ethers, tt, from, decimals)
+    }
+
     await utils.transferToken(ethers, tt, signer, to, amountRaw, decimals)
   }
 }
