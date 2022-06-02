@@ -169,6 +169,7 @@ const transfer = async (ethers, signer, to, value) => {
   const res = await signer.sendTransaction(req)
   const rec = await res.wait()
   DEBUG && console.log(req, res, rec)
+  console.log('transactionHash:', rec.transactionHash)
 
   await logBalance(ethers, signer.address, 'from -')
   await logBalance(ethers, to, 'to -')
@@ -190,6 +191,7 @@ const transferToken = async (ethers, contract, signer, to, amount, decimals = 18
   const res = await contract.transfer(to, amount)
   const rec = await res.wait()
   DEBUG && console.log(res, rec)
+  console.log('transactionHash:', rec.transactionHash)
 
   await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
   await logBalanceToken(ethers, contract, to, 'to -', decimals)
