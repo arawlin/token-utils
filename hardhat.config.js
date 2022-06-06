@@ -27,7 +27,7 @@ taskWrap(task, require('./tasks/transferAll'))
 module.exports = {
   defaultNetwork: 'hardhat',
   networks: {
-    mainnet: {
+    inconfig: {
       chainId: Number(process.env.ID_CHAIN),
       url: process.env.URL_RPC,
     },
