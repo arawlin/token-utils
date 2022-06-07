@@ -1,4 +1,4 @@
-const DEBUG = true
+const DEBUG = false
 
 const DIR_RES = './resources/'
 const DIR_RES_KEYSTORES = DIR_RES + 'keystores/'
