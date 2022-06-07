@@ -11,7 +11,7 @@ const action = async ({ d, p, t, from, to, amount }, { ethers }) => {
   }
 
   const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
-  let amountRaw = ethers.utils.parseEther(amount)
+  const amountRaw = amount === '-1' ? ethers.BigNumber.from(amount) : ethers.utils.parseEther(amount)
 
   const signer = await utils.loadWalletOne(ethers, dir, pass, from)
   if (!signer) {
@@ -19,26 +19,9 @@ const action = async ({ d, p, t, from, to, amount }, { ethers }) => {
   }
 
   if (!tt) {
-    // if amount is 0, then transfer the rest balance
-    if (amountRaw.lte(ethers.BigNumber.from('0'))) {
-      const feeData = await ethers.provider.getFeeData()
-      const GAS_LIMIT = ethers.BigNumber.from('21001')
-      const GAS_FEE = GAS_LIMIT.mul(feeData.maxFeePerGas)
-
-      const bal = await utils.logBalance(ethers, from)
-
-      amountRaw = bal.sub(GAS_FEE)
-    }
-
     await utils.transfer(ethers, signer, to, amountRaw)
   } else {
     const decimals = await tt.decimals()
-
-    // if amount is 0, then transfer the rest balance
-    if (amountRaw.lte(ethers.BigNumber.from('0'))) {
-      amountRaw = await utils.logBalanceToken(ethers, tt, from, decimals)
-    }
-
     await utils.transferToken(ethers, tt, signer, to, amountRaw, decimals)
   }
 }
@@ -52,7 +35,7 @@ module.exports = {
     { name: 't', describtion: 'address of token or null for the eth', defaultValue: '' },
     { name: 'from', describtion: 'transfer from the address' },
     { name: 'to', describtion: 'transfer to the address' },
-    { name: 'amount', describtion: 'transfer amount' },
+    { name: 'amount', describtion: 'transfer amount. -1: all balance except fee, 0: param error, else the value must be great than 0' },
   ],
   action,
 }

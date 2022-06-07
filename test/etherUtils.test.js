@@ -32,12 +32,15 @@ describe('ether utils', () => {
   it.skip('transfer', async () => {
     const ss = await ethers.getSigners()
     await utils.transfer(ethers, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
+    await utils.transfer(ethers, ss[8], ss[9].address, ethers.BigNumber.from('-1'))
   })
 
   it.skip('transferToken', async () => {
     const ss = await ethers.getSigners()
     const mockToken = await fixtures.loadMockToken('1000000')
     await utils.transferToken(ethers, mockToken, ss[0], ss[1].address, ethers.utils.parseUnits('1'))
+
+    await utils.transferToken(ethers, mockToken, ss[1], ss[2].address, ethers.BigNumber.from('-1'))
   })
 
   it.skip('transferAll', async () => {

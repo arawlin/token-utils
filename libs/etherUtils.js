@@ -146,24 +146,54 @@ const logBalanceToken = async (ethers, contract, address, label = '', decimals =
   return bal
 }
 
-const transfer = async (ethers, signer, to, value) => {
+/**
+ * transfer ETH
+ *
+ * @param {*} ethers
+ * @param {*} signer
+ * @param {*} to
+ * @param {*} value -1: all balance except fee, 0: param error
+ * @returns
+ */
+const transfer = async (ethers, signer, to, value, onFinish) => {
   console.log('transfer --------- ')
-  const bal = await logBalance(ethers, signer.address, 'from -')
-  await logBalance(ethers, to, 'to -')
 
-  if (bal.lt(value)) {
-    console.log(`not enough balance ${ethers.utils.formatEther(bal)} - ${ethers.utils.formatEther(value)}`)
+  if (signer.address.toLowerCase() === to.toLowerCase()) {
+    console.log(`from and to is the same address`)
     return false
   }
 
   const gasLimit = ethers.BigNumber.from('21001')
   const feeData = await signer.provider.getFeeData()
-  console.log(
-    `from: ${signer.address}, to: ${to}, value: ${ethers.utils.formatEther(value)}`,
-    `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
-    `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
-    `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
-  )
+  const fee = gasLimit.mul(feeData.maxFeePerGas)
+  DEBUG &&
+    console.log(
+      `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
+      `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
+      `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
+      `fee: ${ethers.utils.formatUnits(fee, 'ether')} ether`,
+    )
+
+  const bal = await logBalance(ethers, signer.address, 'from -')
+  await logBalance(ethers, to, 'to -')
+
+  // all balance except fee
+  if (ethers.BigNumber.from('-1').eq(value)) {
+    value = bal.sub(fee)
+  }
+
+  if (ethers.BigNumber.from('0').gte(value)) {
+    console.log(`lte 0`)
+    return false
+  }
+
+  const valueAll = value.add(fee)
+  if (bal.lt(valueAll)) {
+    console.log(`not enough balance ${ethers.utils.formatEther(bal)} - ${ethers.utils.formatEther(value)}`)
+    return false
+  }
+
+  console.log(`from: ${signer.address}, to: ${to}, value: ${ethers.utils.formatEther(value)}`)
 
   const req = { to, value, gasLimit, maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas }
   const res = await signer.sendTransaction(req)
@@ -174,18 +204,49 @@ const transfer = async (ethers, signer, to, value) => {
   await logBalance(ethers, signer.address, 'from -')
   await logBalance(ethers, to, 'to -')
 
+  onFinish && (await onFinish(rec.transactionHash, value))
+
   return true
 }
 
-const transferToken = async (ethers, contract, signer, to, amount, decimals = 18) => {
+/**
+ * transfer erc20 token
+ *
+ * @param {*} ethers
+ * @param {*} contract
+ * @param {*} signer
+ * @param {*} to
+ * @param {BigNumber} amount -1: all balance except fee, 0: param error
+ * @param {*} decimals
+ * @returns
+ */
+const transferToken = async (ethers, contract, signer, to, amount, decimals = 18, onFinish) => {
   console.log('transferToken --------- ')
+
+  if (signer.address.toLowerCase() === to.toLowerCase()) {
+    console.log(`from and to is the same address`)
+    return false
+  }
+
   const bal = await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
   await logBalanceToken(ethers, contract, to, 'to -', decimals)
+
+  // all balance except fee
+  if (ethers.BigNumber.from('-1').eq(amount)) {
+    amount = bal
+  }
+
+  if (ethers.BigNumber.from('0').gte(amount)) {
+    console.log(`lte 0`)
+    return false
+  }
 
   if (bal.lt(amount)) {
     console.log(`not enough balance ${ethers.utils.formatUnits(bal, decimals)} - ${ethers.utils.formatUnits(amount, decimals)}`)
     return false
   }
+
+  console.log(`from: ${signer.address}, to: ${to}, value: ${ethers.utils.formatUnits(amount, decimals)}`)
 
   contract = contract.connect(signer)
   const res = await contract.transfer(to, amount)
@@ -196,6 +257,8 @@ const transferToken = async (ethers, contract, signer, to, amount, decimals = 18
   await logBalanceToken(ethers, contract, signer.address, 'from -', decimals)
   await logBalanceToken(ethers, contract, to, 'to -', decimals)
 
+  onFinish && (await onFinish(rec.transactionHash, amount))
+
   return true
 }
 
@@ -205,41 +268,22 @@ const transferAll = async (ethers, dir, pass, to, miniValue = '0.01') => {
   await logBalance(ethers, to, 'to -')
   const mini = ethers.utils.parseEther(miniValue)
 
-  // fee
-  const feeData = await ethers.provider.getFeeData()
-  const GAS_LIMIT = ethers.BigNumber.from('21001')
-  const GAS_FEE = GAS_LIMIT.mul(feeData.maxFeePerGas)
-  console.log(
-    `GAS_LIMIT: ${GAS_LIMIT.toString()},`,
-    `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
-    `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
-    `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
-    `GAS_FEE: ${ethers.utils.formatUnits(GAS_FEE, 'ether')} ether`,
-  )
-
   let total = ethers.BigNumber.from('0')
-  await loadWallets(ethers, dir, pass, async (wallet, idx, fn) => {
+  await loadWallets(ethers, dir, pass, async (wallet, idx) => {
     if (wallet.address.toLowerCase() === to.toLowerCase()) {
       return 1
     }
 
     try {
-      // balance enough?
       const bal = await logBalance(ethers, wallet.address, `${idx} -`)
-      const rest = bal.sub(GAS_FEE)
-      if (rest.lt(mini)) {
-        console.log(`rest value less than ${miniValue}`)
+      if (bal.lt(mini)) {
+        console.log(`balance less than ${miniValue}`)
         return 0
       }
 
-      // transfer to
-      const suc = await transfer(ethers, wallet, to, rest)
-      if (!suc) {
-        return 0
-      }
-
-      total = total.add(rest)
-      return 1
+      // transfer all balance
+      const suc = await transfer(ethers, wallet, to, ethers.BigNumber.from('-1'), async (txid, amt) => (total = total.add(amt)))
+      return suc ? 1 : 0
     } catch (e) {
       console.error(e)
     }
