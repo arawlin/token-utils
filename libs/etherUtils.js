@@ -166,13 +166,12 @@ const transfer = async (ethers, signer, to, value, onFinish) => {
   const gasLimit = ethers.BigNumber.from('21001')
   const feeData = await signer.provider.getFeeData()
   const fee = gasLimit.mul(feeData.maxFeePerGas)
-  DEBUG &&
-    console.log(
-      `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
-      `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
-      `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
-      `fee: ${ethers.utils.formatUnits(fee, 'ether')} ether`,
-    )
+  console.log(
+    `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
+    `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
+    `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
+    `fee: ${ethers.utils.formatUnits(fee, 'ether')} ether`,
+  )
 
   const bal = await logBalance(ethers, signer.address, 'from -')
   await logBalance(ethers, to, 'to -')
