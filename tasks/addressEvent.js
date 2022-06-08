@@ -26,6 +26,7 @@ const action = async ({ a }, { ethers }) => {
       console.error(e)
     }
   })
+  p.on('error', console.log)
 
   while (true) {
     await sleep(10 * 1000)
