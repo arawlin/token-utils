@@ -10,18 +10,18 @@ const action = async ({ d, p, t, from, to, amount }, { ethers }) => {
     throw new Error('params error')
   }
 
-  const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
-  const amountRaw = amount === '-1' ? ethers.BigNumber.from(amount) : ethers.utils.parseEther(amount)
-
   const signer = await utils.loadWalletOne(ethers, dir, pass, from)
   if (!signer) {
     throw new Error(`param --from ${from} not found`)
   }
 
+  const tt = t && new ethers.Contract(t, abiERC20, ethers.provider)
   if (!tt) {
+    const amountRaw = amount === '-1' ? ethers.BigNumber.from(amount) : ethers.utils.parseEther(amount)
     await utils.transfer(ethers, signer, to, amountRaw)
   } else {
     const decimals = await tt.decimals()
+    const amountRaw = amount === '-1' ? ethers.BigNumber.from(amount) : ethers.utils.parseUnits(amount, decimals)
     await utils.transferToken(ethers, tt, signer, to, amountRaw, decimals)
   }
 }
