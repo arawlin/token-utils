@@ -4,6 +4,7 @@ require('@nomiclabs/hardhat-waffle')
 require('@nomiclabs/hardhat-solhint')
 // require('hardhat-gas-reporter')
 require('solidity-coverage')
+require('./plugins/hardhat-web3-ws')
 
 console.log('env -------------- ', process.env.NAME)
 
