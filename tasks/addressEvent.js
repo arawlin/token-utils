@@ -1,13 +1,16 @@
 const { sleep } = require('../libs')
 const emailUtils = require('../libs/emailUtils')
 
-const action = async ({ a }, { ethers }) => {
-  const p = new ethers.providers.WebSocketProvider(process.env.URL_RPC_WS)
-  p.on('block', async (blockNumber) => {
-    try {
-      console.log(blockNumber)
+const action = async ({ a }, { web3 }) => {
+  web3.eth.subscribe('newBlockHeaders', async (error, { number }) => {
+    if (error) {
+      console.error(error)
+      return
+    }
+    console.log(number)
 
-      const block = await p.getBlockWithTransactions(blockNumber)
+    try {
+      const block = await web3.eth.getBlock(number, true)
       const txs = block?.transactions
       if (!txs) {
         return
@@ -17,7 +20,7 @@ const action = async ({ a }, { ethers }) => {
           return
         }
 
-        const msg = `block num: ${blockNumber}, from: ${t.from}, txid: ${t.hash}`
+        const msg = `block num: ${number}, from: ${t.from}, txid: ${t.blockHash}`
         console.log(msg)
 
         emailUtils.send('address event', msg)
@@ -26,7 +29,6 @@ const action = async ({ a }, { ethers }) => {
       console.error(e)
     }
   })
-  p.on('error', console.log)
 
   while (true) {
     await sleep(10 * 1000)
