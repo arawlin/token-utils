@@ -165,10 +165,10 @@ const transfer = async (ethers, signer, to, value, onFinish) => {
 
   const gasLimit = ethers.BigNumber.from('21001')
   const feeData = await signer.provider.getFeeData()
-  const fee = gasLimit.mul(feeData.maxFeePerGas)
+  const fee = gasLimit.mul(feeData.maxFeePerGas ?? feeData.gasPrice)
   console.log(
-    `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
-    `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
+    feeData.maxFeePerGas && `maxFeePerGas: ${ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei')} gwei`,
+    feeData.maxPriorityFeePerGas && `maxPriorityFeePerGas: ${ethers.utils.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} gwei`,
     `gasPrice: ${ethers.utils.formatUnits(feeData.gasPrice, 'gwei')} gwei`,
     `fee: ${ethers.utils.formatUnits(fee, 'ether')} ether`,
   )
@@ -194,7 +194,12 @@ const transfer = async (ethers, signer, to, value, onFinish) => {
 
   console.log(`from: ${signer.address}, to: ${to}, value: ${ethers.utils.formatEther(value)}`)
 
-  const req = { to, value, gasLimit, maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas }
+  let req
+  if (feeData.maxFeePerGas) {
+    req = { to, value, gasLimit, maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas }
+  } else {
+    req = { to, value, gasLimit, gasPrice: feeData.gasPrice }
+  }
   const res = await signer.sendTransaction(req)
   const rec = await res.wait()
   DEBUG && console.log(req, res, rec)
