@@ -6,6 +6,8 @@ require('@nomiclabs/hardhat-solhint')
 require('solidity-coverage')
 require('./plugins/hardhat-web3-ws')
 
+require('./db').connect()
+
 console.log('env -------------- ', process.env.NAME)
 
 const taskWrap = (taskFunc, taskInfo) => {
@@ -25,6 +27,7 @@ taskWrap(task, require('./tasks/balances'))
 taskWrap(task, require('./tasks/transfer'))
 taskWrap(task, require('./tasks/transferAll'))
 taskWrap(task, require('./tasks/eventAddress'))
+taskWrap(task, require('./tasks/eventToken'))
 
 module.exports = {
   defaultNetwork: 'hardhat',
