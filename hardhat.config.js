@@ -24,7 +24,7 @@ taskWrap(task, require('./tasks/accounts'))
 taskWrap(task, require('./tasks/balances'))
 taskWrap(task, require('./tasks/transfer'))
 taskWrap(task, require('./tasks/transferAll'))
-taskWrap(task, require('./tasks/addressEvent'))
+taskWrap(task, require('./tasks/eventAddress'))
 
 module.exports = {
   defaultNetwork: 'hardhat',
