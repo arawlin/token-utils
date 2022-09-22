@@ -9,6 +9,10 @@ const connect = async () => {
 
   const uriDB = process.env.uriDB
   const nmDB = process.env.nmDB
+  if (!uriDB || !uriDB) {
+    console.log('db no use')
+    return
+  }
 
   const client = new MongoClient(uriDB)
   // auto close connection when app finished
