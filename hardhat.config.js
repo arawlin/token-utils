@@ -35,6 +35,7 @@ module.exports = {
     inconfig: {
       chainId: Number(process.env.ID_CHAIN),
       url: process.env.URL_RPC,
+      accounts: process.env.ACCOUNTS ? process.env.ACCOUNTS.split(',') : undefined,
     },
   },
   // gasReporter: {
