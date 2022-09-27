@@ -9,6 +9,7 @@ typechain
 cache
 artifacts
 
+.openzeppelin
 .env
 .env.*
 resources/keystores/**/*
