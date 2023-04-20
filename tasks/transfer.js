@@ -28,14 +28,14 @@ const action = async ({ d, p, t, from, to, amount }, { ethers }) => {
 
 module.exports = {
   name: 'transfer',
-  describtion: 'Transfer a asset from addrFrom which is in the keystore dir to addrTo ',
+  description: 'Transfer a asset from addrFrom which is in the keystore dir to addrTo ',
   params: [
-    { name: 'd', describtion: 'keystore dir name', defaultValue: '' },
-    { name: 'p', describtion: 'keystore password', defaultValue: '' },
-    { name: 't', describtion: 'address of token or null for the eth', defaultValue: '' },
-    { name: 'from', describtion: 'transfer from the address' },
-    { name: 'to', describtion: 'transfer to the address' },
-    { name: 'amount', describtion: 'transfer amount. -1: all balance except fee, 0: param error, else the value must be great than 0' },
+    { name: 'd', description: 'keystore dir name', defaultValue: '' },
+    { name: 'p', description: 'keystore password', defaultValue: '' },
+    { name: 't', description: 'address of token or null for the eth', defaultValue: '' },
+    { name: 'from', description: 'transfer from the address' },
+    { name: 'to', description: 'transfer to the address' },
+    { name: 'amount', description: 'transfer amount. -1: all balance except fee, 0: param error, else the value must be great than 0' },
   ],
   action,
 }

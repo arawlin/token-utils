@@ -38,7 +38,7 @@ const action = async ({ a }, { web3 }) => {
 
 module.exports = {
   name: 'eventAddress',
-  describtion: 'a listener of event of address',
-  params: [{ name: 'a', describtion: 'address to listen' }],
+  description: 'a listener of event of address',
+  params: [{ name: 'a', description: 'address to listen' }],
   action,
 }

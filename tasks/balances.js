@@ -21,11 +21,11 @@ const action = async ({ d, p, t }, { ethers }) => {
 
 module.exports = {
   name: 'balances',
-  describtion: 'Prints all the balances in keystore dir',
+  description: 'Prints all the balances in keystore dir',
   params: [
-    { name: 'd', describtion: 'keystore dir name', defaultValue: '' },
-    { name: 'p', describtion: 'keystore password', defaultValue: '' },
-    { name: 't', describtion: 'address of token or null for the eth', defaultValue: '' },
+    { name: 'd', description: 'keystore dir name', defaultValue: '' },
+    { name: 'p', description: 'keystore password', defaultValue: '' },
+    { name: 't', description: 'address of token or null for the eth', defaultValue: '' },
   ],
   action,
 }

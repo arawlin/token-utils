@@ -16,12 +16,12 @@ const action = async ({ d, p, c, n }, { ethers }) => {
 
 module.exports = {
   name: 'accounts',
-  describtion: 'Operate accounts',
+  description: 'Operate accounts',
   params: [
-    { name: 'd', describtion: 'keystore dir name', defaultValue: '' },
-    { name: 'p', describtion: 'keystore password', defaultValue: '' },
-    { name: 'c', describtion: 'create accounts', paramType: 'flag' },
-    { name: 'n', describtion: 'How many accounts need to be created' },
+    { name: 'd', description: 'keystore dir name', defaultValue: '' },
+    { name: 'p', description: 'keystore password', defaultValue: '' },
+    { name: 'c', description: 'create accounts', paramType: 'flag' },
+    { name: 'n', description: 'How many accounts need to be created' },
   ],
   action,
 }

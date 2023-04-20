@@ -35,12 +35,12 @@ const action = async ({ t, b, s, p }, { web3 }) => {
 
 module.exports = {
   name: 'eventToken',
-  describtion: 'a listener of event of token',
+  description: 'a listener of event of token',
   params: [
-    { name: 't', describtion: 'address of token' },
-    { name: 'b', describtion: 'from block number, from now if not set' },
-    { name: 's', describtion: 'topics[0]: the hash of signature of method' },
-    { name: 'p', describtion: '";" split the params of method, "," split the option for each topic. e.g. aaa,bbb;ccc', defaultValue: '' },
+    { name: 't', description: 'address of token' },
+    { name: 'b', description: 'from block number, from now if not set' },
+    { name: 's', description: 'topics[0]: the hash of signature of method' },
+    { name: 'p', description: '";" split the params of method, "," split the option for each topic. e.g. aaa,bbb;ccc', defaultValue: '' },
   ],
   action,
 }

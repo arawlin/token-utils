@@ -12,12 +12,12 @@ require('./db').connect()
 console.log('env -------------- ', process.env.NAME)
 
 const taskWrap = (taskFunc, taskInfo) => {
-  const definition = taskFunc(taskInfo.name, taskInfo.describtion)
+  const definition = taskFunc(taskInfo.name, taskInfo.description)
   taskInfo.params?.forEach((i) => {
     if (!i.paramType) {
-      definition.addParam(i.name, i.describtion, i.defaultValue, i.valueType)
+      definition.addParam(i.name, i.description, i.defaultValue, i.valueType)
     } else if (i.paramType === 'flag') {
-      definition.addFlag(i.name, i.describtion)
+      definition.addFlag(i.name, i.description)
     }
   })
   definition.setAction(taskInfo.action)
@@ -37,6 +37,7 @@ module.exports = {
       chainId: Number(process.env.ID_CHAIN),
       url: process.env.URL_RPC,
       accounts: process.env.ACCOUNTS ? process.env.ACCOUNTS.split(',') : undefined,
+      timeout: 60000,
     },
   },
   // gasReporter: {
