@@ -30,6 +30,7 @@ taskWrap(task, require('./tasks/transferAll'))
 taskWrap(task, require('./tasks/eventAddress'))
 taskWrap(task, require('./tasks/eventToken'))
 taskWrap(task, require('./tasks/mevLike'))
+taskWrap(task, require('./tasks/mevLikeMemPool'))
 
 module.exports = {
   // defaultNetwork: 'hardhat',
@@ -38,6 +39,7 @@ module.exports = {
     inconfig: {
       chainId: Number(process.env.ID_CHAIN),
       url: process.env.URL_RPC,
+      urlws: process.env.URL_RPC_WS,
       accounts: process.env.ACCOUNTS ? process.env.ACCOUNTS.split(',') : undefined,
       timeout: 60000,
     },

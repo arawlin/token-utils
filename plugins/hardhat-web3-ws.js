@@ -23,7 +23,7 @@ extendEnvironment((env) => {
   env.web3 = lazyObject(() => {
     const Web3 = require('web3')
     const options = {
-      timeout: 30000, // ms
+      timeout: 5000, // ms
 
       clientConfig: {
         // Useful if requests are large
@@ -43,7 +43,7 @@ extendEnvironment((env) => {
         onTimeout: false,
       },
     }
-    const provider = new Web3WsProvider(adaptNetwork(env.network.config.url), options)
+    const provider = new Web3WsProvider(env.network.config.urlws, options)
       .on('connect', () => console.log('Web3WsProvider - connect'))
       .on('reconnect', () => console.log('Web3WsProvider - reconnect'))
     return new Web3(provider)
