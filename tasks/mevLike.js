@@ -7,24 +7,31 @@ const action = async ({ a, b }, { ethers }) => {
     return
   }
 
-  let notifies = ''
-  const tos = new Set()
   let last = 0
   while (true) {
+    let notifies = ''
+
     do {
       const cur = await ethers.provider.getBlockNumber()
       if (cur === last) {
         break
       }
+
+      let lasting = 0
       if (b && b < cur) {
-        last = b++
+        lasting = b++
       } else {
-        last = cur
+        lasting = cur
         b = undefined
       }
-      console.log(last, cur)
+      console.log(lasting, cur)
 
-      const bt = await ethers.provider.getBlockWithTransactions(last)
+      const bt = await ethers.provider.getBlockWithTransactions(lasting)
+      if (!bt) {
+        break
+      }
+      last = lasting
+
       for (const t of bt.transactions) {
         if (t.from.toLowerCase() !== a.toLowerCase()) {
           continue
@@ -38,15 +45,12 @@ const action = async ({ a, b }, { ethers }) => {
           // sell
           notifies += `sell - ${t.hash}</a> || `
         }
-
-        tos.add(t.to)
       }
     } while (false)
 
     // console.log(tos)
     if (notifies) {
       await emailSend.send('mev', notifies)
-      notifies = ''
     }
 
     await sleep(1 * 1000)
