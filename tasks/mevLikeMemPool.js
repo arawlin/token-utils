@@ -1,6 +1,6 @@
 const { sleep } = require('../libs')
 
-const TIMEOUT = 24
+const TIMEOUT = 12
 
 const action = async ({ mev, router }, { ethers, web3 }) => {
   if (!mev) {
