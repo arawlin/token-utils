@@ -1,5 +1,5 @@
 const { sleep } = require('../libs')
-const emailUtils = require('../libs/emailUtils')
+const emailSend = require('../libs/emailSend')
 
 const action = async ({ a }, { web3 }) => {
   web3.eth.subscribe('newBlockHeaders', async (error, { number }) => {
@@ -23,7 +23,7 @@ const action = async ({ a }, { web3 }) => {
         const msg = `block num: ${number}, from: ${t.from}, txid: ${t.blockHash}`
         console.log(msg)
 
-        emailUtils.send('address event', msg)
+        emailSend.send('address event', msg)
       })
     } catch (e) {
       console.error(e)
