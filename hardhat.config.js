@@ -29,9 +29,11 @@ taskWrap(task, require('./tasks/transfer'))
 taskWrap(task, require('./tasks/transferAll'))
 taskWrap(task, require('./tasks/eventAddress'))
 taskWrap(task, require('./tasks/eventToken'))
+taskWrap(task, require('./tasks/mevLike'))
 
 module.exports = {
-  defaultNetwork: 'hardhat',
+  // defaultNetwork: 'hardhat',
+  defaultNetwork: 'inconfig',
   networks: {
     inconfig: {
       chainId: Number(process.env.ID_CHAIN),
