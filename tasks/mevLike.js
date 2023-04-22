@@ -26,29 +26,49 @@ const action = async ({ a, b }, { ethers }) => {
       }
       console.log(lasting, cur)
 
-      const bt = await ethers.provider.getBlockWithTransactions(lasting)
-      if (!bt) {
-        break
-      }
-      last = lasting
-
-      for (const t of bt.transactions) {
-        if (t.from.toLowerCase() !== a.toLowerCase()) {
-          continue
+      try {
+        const bt = await ethers.provider.getBlockWithTransactions(lasting)
+        if (!bt) {
+          break
         }
-        console.log({ hash: t.hash, to: t.to, gasPrice: ethers.utils.formatUnits(t.gasPrice, 'gwei'), value: ethers.utils.formatEther(t.value), data: t.data })
 
-        if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethers.BigNumber.from(0))) {
-          // buy
-          notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth ${t.hash}</a> || `
-        } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethers.BigNumber.from(0))) {
-          // sell
-          notifies += `sell - ${t.hash}</a> || `
+        for (const t of bt.transactions) {
+          if (t.from.toLowerCase() !== a.toLowerCase()) {
+            continue
+          }
+
+          const tr = await ethers.provider.getTransactionReceipt(t.hash)
+          console.log({
+            hashTransaction: t.hash,
+            blockNumber: t.blockNumber,
+            status: tr.status,
+            to: t.to,
+            value: ethers.utils.formatEther(t.value),
+            gasPrice: ethers.utils.formatUnits(t.gasPrice, 'gwei'),
+            gasUsed: tr.gasUsed,
+            gasFee: ethers.utils.formatEther(t.gasPrice.mul(tr.gasUsed)),
+            data: t.data,
+          })
+          if (tr.status !== 1) {
+            continue
+          }
+
+          if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethers.BigNumber.from(0))) {
+            // buy
+            notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth ${t.hash} || `
+          } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethers.BigNumber.from(0))) {
+            // sell
+            notifies += `sell - ${t.hash} || `
+          }
         }
+
+        // already finished
+        last = lasting
+      } catch (e) {
+        console.error(e)
       }
     } while (false)
 
-    // console.log(tos)
     if (notifies) {
       await emailSend.send('mev', notifies)
     }
