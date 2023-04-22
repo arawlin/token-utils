@@ -1,3 +1,4 @@
+const { types } = require('hardhat/config')
 const { sleep } = require('../libs')
 const emailSend = require('../libs/emailSend')
 
@@ -7,27 +8,19 @@ const action = async ({ a, b }, { ethers }) => {
     return
   }
 
-  let last = 0
+  let last = b || (await ethers.provider.getBlockNumber())
   while (true) {
-    let notifies = ''
+    const txs = []
 
     do {
-      const cur = await ethers.provider.getBlockNumber()
-      if (cur === last) {
-        break
-      }
-
-      let lasting = 0
-      if (b && b < cur) {
-        lasting = b++
-      } else {
-        lasting = cur
-        b = undefined
-      }
-      console.log(lasting, cur)
-
       try {
-        const bt = await ethers.provider.getBlockWithTransactions(lasting)
+        const cur = await ethers.provider.getBlockNumber()
+        if (cur === last) {
+          break
+        }
+        console.log(last, cur)
+
+        const bt = await ethers.provider.getBlockWithTransactions(last)
         if (!bt) {
           break
         }
@@ -38,7 +31,10 @@ const action = async ({ a, b }, { ethers }) => {
           }
 
           const tr = await ethers.provider.getTransactionReceipt(t.hash)
-          console.log({
+          if (tr.status !== 1) {
+            continue
+          }
+          const tw = {
             hashTransaction: t.hash,
             blockNumber: t.blockNumber,
             status: tr.status,
@@ -48,27 +44,28 @@ const action = async ({ a, b }, { ethers }) => {
             gasUsed: tr.gasUsed,
             gasFee: ethers.utils.formatEther(t.gasPrice.mul(tr.gasUsed)),
             data: t.data,
-          })
-          if (tr.status !== 1) {
-            continue
           }
-
-          if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethers.BigNumber.from(0))) {
-            // buy
-            notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth ${t.hash} || `
-          } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethers.BigNumber.from(0))) {
-            // sell
-            notifies += `sell - ${t.hash} || `
-          }
+          txs.push(tw)
+          console.log(tw)
         }
 
         // already finished
-        last = lasting
+        last++
       } catch (e) {
         console.error(e)
       }
     } while (false)
 
+    let notifies = ''
+    for (const t of txs) {
+      if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethers.BigNumber.from(0))) {
+        // buy
+        notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth ${t.hash} || `
+      } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethers.BigNumber.from(0))) {
+        // sell
+        notifies += `sell - ${t.hash} || `
+      }
+    }
     if (notifies) {
       await emailSend.send('mev', notifies)
     }
@@ -82,7 +79,7 @@ module.exports = {
   description: 'mev like others',
   params: [
     { name: 'a', description: 'address of mev', defaultValue: '' },
-    { name: 'b', description: 'last block number' },
+    { name: 'b', description: 'last block number', defaultValue: 0, valueType: types.int },
   ],
   action,
 }
