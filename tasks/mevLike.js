@@ -62,10 +62,10 @@ const action = async ({ a, b }, { ethers }) => {
     for (const t of txs) {
       if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethers.BigNumber.from(0))) {
         // buy
-        notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth ${t.hashTransaction} || `
+        notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth || `
       } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethers.BigNumber.from(0))) {
         // sell
-        notifies += `sell - ${t.hashTransaction} || `
+        notifies += `sell || `
       }
     }
     if (notifies) {
