@@ -2,6 +2,10 @@ const fs = require('fs/promises')
 const path = require('path')
 const { DEBUG } = require('./constants')
 
+const filterABI = (abi, name) => {
+  return abi.filter((e) => e.name === name)?.[0]
+}
+
 const createWallets = async (ethers, dir, pass, number) => {
   console.log('createWallets ---------- ')
 
@@ -328,6 +332,8 @@ const transferTokenAll = async (ethers, contract, dir, pass, to, miniAmount = '0
 }
 
 module.exports = {
+  filterABI,
+
   createWallets,
 
   loadWalletOne,
