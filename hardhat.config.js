@@ -31,6 +31,7 @@ taskWrap(task, require('./tasks/eventAddress'))
 taskWrap(task, require('./tasks/eventToken'))
 taskWrap(task, require('./tasks/mevLike'))
 taskWrap(task, require('./tasks/mevLikeMemPool'))
+taskWrap(task, require('./tasks/mevActSimple'))
 
 module.exports = {
   // defaultNetwork: 'hardhat',

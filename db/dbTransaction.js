@@ -5,34 +5,42 @@ transaction - {
     "_id": {
         "$oid": "62b574f5838caa09ab321a71"
     },
-    "address": "xxxxx",
-    "blockHash": "xxxx",
-    "blockNumber": xxxx,
-    "data": "xxxxx",
-    "id": "xxxx",
-    "logIndex": xxxx,
-    "removed": false,
-    "topics": ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", "xxxx", "xxxx"],
-    "transactionHash": "xxxx",
-    "transactionIndex": xx
 }
 */
 const nmColl = 'transaction'
+const constructColl = (addr) => nmColl + '-' + addr.toLowerCase()
 
-const find = async (fitler, options) => {
-  return await db.find(nmColl, fitler, options)
+const findByHashTransaction = async (addr, hashTransaction) => {
+  return await db.findOne(constructColl(addr), { hashTransaction })
 }
 
-const count = async (filter) => {
-  return await db.countDocuments(nmColl, filter)
+const findLast = async (addr, interval, num) => {
+  const deadline = (new Date().getTime() - interval) / 1000
+  return await db.find(constructColl(addr), { timestamp: { $gt: deadline } }, { sort: { _id: -1 }, limit: num })
 }
 
-const update = async (filter, m) => {
-  await db.updateOne(nmColl, filter, m)
+const save = async (addr, tx) => {
+  await db.updateOne(constructColl(addr), { hashTransaction: tx.hashTransaction }, tx)
+}
+
+const saveAll = async (addr, txs) => {
+  const opers = []
+  for (const t of txs) {
+    const o = {
+      updateOne: {
+        filter: { hashTransaction: t.hashTransaction },
+        update: { $set: t },
+        upsert: true,
+      },
+    }
+    opers.push(o)
+  }
+  return await db.bulkWrite(constructColl(addr), opers)
 }
 
 module.exports = {
-  find,
-  count,
-  update,
+  findByHashTransaction,
+  findLast,
+  save,
+  saveAll,
 }

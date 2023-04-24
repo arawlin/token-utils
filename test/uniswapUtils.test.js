@@ -6,7 +6,7 @@ const abiUniswapV2Router02 = require('../abis/uniswap/UniswapV2Router02.json')
 const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
 
 describe('uniswap', () => {
-  it.skip('contract overrides', async () => {
+  it('contract overrides', async () => {
     const hash = '0xd7c0d2a5aa3b6697e03f8d6a0c16503d29d9059199e763500f21f1480b88bbd5'
     const tx = await ethers.provider.getTransaction(hash)
     console.log(tx)
@@ -18,7 +18,7 @@ describe('uniswap', () => {
     const block = await ethers.provider.getBlock(await ethers.provider.getBlockNumber())
     console.log(block)
     console.log(ethers.utils.formatUnits(block.baseFeePerGas, 'gwei'), 'gwei')
-    console.log(block.timestamp, new Date(block.timestamp * 1000), new Date())
+    console.log(block.timestamp, new Date().getTime() / 1000, new Date(block.timestamp * 1000), new Date())
 
     // gasPrice
     const gasPrice = await ethers.provider.getGasPrice()

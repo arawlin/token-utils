@@ -1,6 +1,6 @@
 const { types } = require('hardhat/config')
-const { sleep } = require('../libs')
-const emailSend = require('../libs/emailSend')
+const { sleep, timeThen } = require('../libs')
+const dbTransaction = require('../db/dbTransaction')
 
 const action = async ({ a, b }, { ethers }) => {
   if (!a) {
@@ -20,6 +20,7 @@ const action = async ({ a, b }, { ethers }) => {
         }
         console.log(last, cur)
 
+        const block = await ethers.provider.getBlock(last)
         const bt = await ethers.provider.getBlockWithTransactions(last)
         if (!bt) {
           break
@@ -46,6 +47,8 @@ const action = async ({ a, b }, { ethers }) => {
             gasUsed: tr.gasUsed,
             gasFee: ethers.utils.formatEther(t.gasPrice.mul(tr.gasUsed)),
             data: t.data,
+            timestamp: block.timestamp,
+            timestampWrap: timeThen(block.timestamp * 1000),
           }
           txs.push(tw)
           console.log(tw)
@@ -58,18 +61,8 @@ const action = async ({ a, b }, { ethers }) => {
       }
     } while (false)
 
-    let notifies = ''
-    for (const t of txs) {
-      if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethers.BigNumber.from(0))) {
-        // buy
-        notifies += `buy - ${Number(ethers.utils.formatEther(t.value)).toFixed(4)}eth || `
-      } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethers.BigNumber.from(0))) {
-        // sell
-        notifies += `sell || `
-      }
-    }
-    if (notifies) {
-      await emailSend.send('mev', notifies)
+    if (txs.length > 0) {
+      await dbTransaction.saveAll(a, txs)
     }
 
     await sleep(1 * 1000)
