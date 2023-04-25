@@ -1,12 +1,14 @@
 const { ethers } = require('hardhat')
 const uni = require('../libs/uniswapUtils')
 const { filterABI } = require('../libs/etherUtils')
+const dbTransaction = require('../db/dbTransaction')
 
 const abiUniswapV2Router02 = require('../abis/uniswap/UniswapV2Router02.json')
+const { ObjectId } = require('mongodb')
 const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
 
 describe('uniswap', () => {
-  it('contract overrides', async () => {
+  it.skip('contract overrides', async () => {
     const hash = '0xd7c0d2a5aa3b6697e03f8d6a0c16503d29d9059199e763500f21f1480b88bbd5'
     const tx = await ethers.provider.getTransaction(hash)
     console.log(tx)
@@ -25,7 +27,7 @@ describe('uniswap', () => {
     console.log(gasPrice, ethers.utils.formatUnits(gasPrice, 'gwei'), 'gwei')
   })
 
-  it('router info', async () => {
+  it.skip('router info', async () => {
     // usdt - 0xdAC17F958D2ee523a2206206994597C13D831ec7
     const addrToken = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
     const token = new ethers.Contract(addrToken, abiERC20, ethers.provider)
@@ -48,6 +50,19 @@ describe('uniswap', () => {
     const interface = new ethers.utils.Interface(abiUniswapV2Router02)
     const dataRipe = interface.decodeFunctionData('0x7ff36ab5', data)
     console.log(dataRipe)
+  })
+
+  it('mongdb transaction', async () => {
+    let idLast
+    while (true) {
+      const txs = await dbTransaction.findLast('0xAf2358e98683265cBd3a48509123d390dDf54534', idLast, 2 * 3600 * 1000, 2)
+      if (!txs || txs.length === 0) {
+        break
+      }
+      idLast = txs[txs.length - 1]._id
+
+      console.log('------', idLast, txs.length, txs)
+    }
   })
 
   it('uniswap sdk', async () => {})

@@ -14,9 +14,12 @@ const findByHashTransaction = async (addr, hashTransaction) => {
   return await db.findOne(constructColl(addr), { hashTransaction })
 }
 
-const findLast = async (addr, interval, num) => {
-  const deadline = (new Date().getTime() - interval) / 1000
-  return await db.find(constructColl(addr), { timestamp: { $gt: deadline } }, { sort: { _id: -1 }, limit: num })
+const findLast = async (addr, idLast, deadline, num) => {
+  const options = { timestamp: { $gt: (new Date().getTime() - deadline) / 1000 } }
+  if (idLast) {
+    options._id = { $gt: idLast }
+  }
+  return await db.find(constructColl(addr), options, { limit: num })
 }
 
 const save = async (addr, tx) => {

@@ -9,3 +9,10 @@ transfer event
 ## mevLike
 
 sell faster than him when he approve a token, so we need to approve immediately after bought a token
+
+check `removeLiquidity` `removeLiquidityWithPermit` etc in mempool, and sell all token with **more gasPrice than remove liquidity**.
+
+create mongodb index:
+
+`idx_hashTransaction`
+`idx_blockNumber`

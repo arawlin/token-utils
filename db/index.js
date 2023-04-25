@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb')
 
 let db
+let connected = false
 
 const connect = async () => {
   if (db) {
@@ -19,6 +20,7 @@ const connect = async () => {
   await client.connect()
   db = client.db(nmDB)
 
+  connected = true
   console.log('db connected')
 }
 
@@ -121,6 +123,7 @@ const groupSum = async (coll, field, fieldSum, itor) => {
 }
 
 module.exports = {
+  connected,
   connect,
   sanitize,
   sanitizeStr,
