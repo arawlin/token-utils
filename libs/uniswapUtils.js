@@ -55,10 +55,13 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
   const value = ethers.utils.parseEther(valueETH)
 
   let gasPrice = await ethers.provider.getGasPrice()
-  gasPrice = gasPrice.mul(gasPricePercent)
+  gasPrice = gasPrice.mul(gasPricePercent).div(RATIO_MAX)
 
   const amounts = await router.getAmountsOut(value, path)
   const amountOutMin = amounts[path.length - 1].mul(RATIO_MAX.sub(RATIO_SLIPPAGE)).div(RATIO_MAX)
+
+  // const gasLimit = await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
+  // console.log('gasLimit', gasLimit)
 
   let tx = await router.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
   let txr = await tx.wait()

@@ -26,7 +26,7 @@ describe('uniswap', () => {
     console.log(gasPrice, ethers.utils.formatUnits(gasPrice, 'gwei'), 'gwei')
   })
 
-  it.skip('router info', async () => {
+  it('router info', async () => {
     // usdt - 0xdAC17F958D2ee523a2206206994597C13D831ec7
     const addrToken = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
     const token = new ethers.Contract(addrToken, abiERC20, ethers.provider)
@@ -42,7 +42,7 @@ describe('uniswap', () => {
     console.log(ethers.utils.formatUnits(amounts[path.length - 1], decimals))
 
     const data =
-      '0x7ff36ab5000000000000000000000000000000000000008c4029798269a8291c58ce7a5a0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000af2358e98683265cbd3a48509123d390ddf54534000000000000000000000000000000000000000000000000000000006444589e0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000769129cd93be6b979f500d1713167244d432bb2f'
+      '0x7ff36ab500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000f2fa228eac1d18462384ffa1a8eb6732e2201be9000000000000000000000000000000000000000000000000000000006448fd880000000000000000000000000000000000000000000000000000000000000002000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7'
     const abiFunc = filterABI(abiUniswapV2Router02, 'swapExactETHForTokens')
     console.log(abiFunc)
 
@@ -55,7 +55,7 @@ describe('uniswap', () => {
     console.log(dataRipe.path)
   })
 
-  it.skip('transaction', async () => {
+  it('transaction', async () => {
     const hash = '0xde3f8c490d51f404f434d9f1165f8b80767fa6b0249fb0a127269a364dadb59e'
     const tx = await ethers.provider.getTransaction(hash)
     const txr = await ethers.provider.getTransactionReceipt(hash)
@@ -103,6 +103,10 @@ describe('uniswap', () => {
   })
 
   it('swap', async () => {
+    const signer = (await ethers.getSigners())[0]
+    const bal = await signer.getBalance()
+    console.log('bal', signer.address, ethers.utils.formatEther(bal))
+
     const path = [process.env.addrWETH, '0xdAC17F958D2ee523a2206206994597C13D831ec7']
     await uni.swapExactETHForTokens(ethers, path, '0.005')
   })
