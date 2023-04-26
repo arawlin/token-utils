@@ -4,7 +4,6 @@ const { filterABI } = require('../libs/etherUtils')
 const dbTransaction = require('../db/dbTransaction')
 
 const abiUniswapV2Router02 = require('../abis/uniswap/UniswapV2Router02.json')
-const { ObjectId } = require('mongodb')
 const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi
 
 describe('uniswap', () => {
@@ -48,11 +47,34 @@ describe('uniswap', () => {
     console.log(abiFunc)
 
     const interface = new ethers.utils.Interface(abiUniswapV2Router02)
-    const dataRipe = interface.decodeFunctionData('0x7ff36ab5', data)
+    let dataRipe = interface.decodeFunctionData('0x7ff36ab5', data)
     console.log(dataRipe)
+
+    dataRipe = uni.decodeABIUniswapV2Router02(ethers, 'swapExactETHForTokens', data)
+    console.log(dataRipe)
+    console.log(dataRipe.path)
   })
 
-  it('mongdb transaction', async () => {
+  it.skip('transaction', async () => {
+    const hash = '0xde3f8c490d51f404f434d9f1165f8b80767fa6b0249fb0a127269a364dadb59e'
+    const tx = await ethers.provider.getTransaction(hash)
+    const txr = await ethers.provider.getTransactionReceipt(hash)
+
+    console.log(tx.gasPrice.toString(), txr.gasUsed.toString(), ethers.utils.formatEther(tx.gasPrice.mul(txr.gasUsed)))
+  })
+
+  it.skip('token', async () => {
+    const value = ethers.utils.parseEther('0.075')
+    const token = new ethers.Contract('0xb3780849Cc89c75B72d215d4C4585E8a3FE7CDB7', abiERC20, ethers.provider)
+    const nmToken = await token.symbol()
+    const balToken = await token.balanceOf('0xAf2358e98683265cBd3a48509123d390dDf54534')
+    const decimalToken = await token.decimals()
+    const priceToken = uni.priceToken(balToken, decimalToken, value)
+
+    console.log(nmToken, ethers.utils.formatUnits(balToken, decimalToken), value, priceToken.toString(), ethers.constants.MaxUint256.toHexString())
+  })
+
+  it.skip('mongdb transaction', async () => {
     let idLast
     while (true) {
       const txs = await dbTransaction.findLast('0xAf2358e98683265cBd3a48509123d390dDf54534', idLast, 2 * 3600 * 1000, 2)
@@ -66,4 +88,22 @@ describe('uniswap', () => {
   })
 
   it('uniswap sdk', async () => {})
+
+  it.skip('splice in for', async () => {
+    const a = [1, 2, 3]
+    for (let i = 0; i < a.length; ++i) {
+      console.log(a.length, i)
+      if (a[i] === 2) {
+        a.splice(i, 1)
+        --i
+        console.log(a.length, i)
+      }
+    }
+    console.log(a)
+  })
+
+  it('swap', async () => {
+    const path = [process.env.addrWETH, '0xdAC17F958D2ee523a2206206994597C13D831ec7']
+    await uni.swapExactETHForTokens(ethers, path, '0.005')
+  })
 })

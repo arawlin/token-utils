@@ -1,8 +1,12 @@
 const sleep = async (interval) => {
   return new Promise((resolve) => setTimeout(resolve, interval))
 }
-const timeInterval = (interval) => {
+const timeIntervalSec = (interval) => {
   return parseInt(new Date().getTime() / 1000 + interval)
+}
+
+const timeOver = (last, over) => {
+  return new Date().getTime() - last > over
 }
 
 const timeNow = () => {
@@ -15,7 +19,8 @@ const timeThen = (timestamp) => {
 
 module.exports = {
   sleep,
-  timeInterval,
+  timeIntervalSec,
+  timeOver,
   timeNow,
   timeThen,
 }

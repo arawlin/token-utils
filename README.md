@@ -16,3 +16,8 @@ create mongodb index:
 
 `idx_hashTransaction`
 `idx_blockNumber`
+
+- buy
+  - when
+  - which token
+  - how much

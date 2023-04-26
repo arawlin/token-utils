@@ -1,5 +1,6 @@
-const { sleep } = require('../libs')
+const { sleep, timeOver, timeNow } = require('../libs')
 const emailSend = require('../libs/emailSend')
+const uniswapUtils = require('../libs/uniswapUtils')
 const dbTransaction = require('../db/dbTransaction')
 
 const TIME_LOOP = 1 * 1000
@@ -52,23 +53,59 @@ const notifyIncoming = async (txs) => {
   }
 }
 
+const boughts = []
+const TIME_OVER = 10 * 60 * 1000
+
 const actSimple = async (txs) => {
-  // TODO: detect all, then sell they when past long time ago
+  // TODO: detect all, then sell they when past a while time
+  for (let i = 0; i < boughts.length; ++i) {
+    const b = boughts[i]
+    if (timeOver(b.timestamp, TIME_OVER)) {
+      await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
+        ethersInner,
+        b.path.reverse(),
+        ethersInner.utils.BigNumber.from(100),
+        ethersInner.utils.BigNumber.from(100),
+      )
+      boughts.splice(i, 1)
+      --i
+    }
+  }
 
   for (const t of txs) {
-    if (t.to === process.env.addrUniswapV2Router02) {
-      // buy
-      actUniswapBuy(t)
+    try {
+      if (t.to === process.env.addrUniswapV2Router02) {
+        if (t.data.startWith(uniswapUtils.mapFuncHash('swapExactETHForTokens'))) {
+          // buy
+          if (boughts.length > 0) {
+            return
+          }
 
-      // sell
+          // path
+          const dataRipe = uniswapUtils.decodeABIUniswapV2Router02(ethersInner, 'swapExactETHForTokens', t.data)
+          if (dataRipe.path[0] !== process.env.addrWETH) {
+            continue
+          }
+
+          const boughtInfo = await uniswapUtils.swapExactETHForTokens(ethersInner, dataRipe.path, '0.05', ethersInner.utils.BigNumber.from(110))
+          boughtInfo.timestamp = new Date().getTime()
+          boughtInfo.path = dataRipe.path
+          boughts.push(boughtInfo)
+        } else if (t.data.startWith(uniswapUtils.mapFuncHash('swapExactTokensForETHSupportingFeeOnTransferTokens'))) {
+          // sell
+        }
+      } else if (t.to === process.env.addrUniversalRouter) {
+        // buy
+        // sell
+      }
       // add liquidation
       // remove liquidation
-    } else if (t.to === process.env.addrUniversalRouter) {
+    } catch (e) {
+      console.error('actSimple', t.hashTransaction, e)
+      await emailSend.send('mev actSimple error', timeNow(), t.hashTransaction)
     }
   }
 }
-
-const actUniswapBuy = async (t) => {}
 
 module.exports = {
   name: 'mevActSimple',
