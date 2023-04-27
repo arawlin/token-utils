@@ -2,6 +2,8 @@ const { types } = require('hardhat/config')
 const { sleep, timeThen } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
 
+const TIME_LOOP = 0.5 * 1000
+
 const action = async ({ a, b }, { ethers }) => {
   if (!a) {
     console.log('address not config')
@@ -18,6 +20,7 @@ const action = async ({ a, b }, { ethers }) => {
         if (cur === last) {
           break
         }
+        last++
         console.log(last, cur)
 
         const block = await ethers.provider.getBlock(last)
@@ -53,9 +56,6 @@ const action = async ({ a, b }, { ethers }) => {
           txs.push(tw)
           console.log(tw)
         }
-
-        // already finished
-        last++
       } catch (e) {
         console.error(e)
       }
@@ -65,7 +65,7 @@ const action = async ({ a, b }, { ethers }) => {
       await dbTransaction.saveAll(a, txs)
     }
 
-    await sleep(1 * 1000)
+    await sleep(TIME_LOOP)
   }
 }
 
