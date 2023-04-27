@@ -3,11 +3,13 @@ const emailSend = require('../libs/emailSend')
 const uniswapUtils = require('../libs/uniswapUtils')
 const dbTransaction = require('../db/dbTransaction')
 
-const TIME_LOOP = 1 * 1000
+const TIME_LOOP = 0.5 * 1000
 
 const NUM_QUERY = 10
-// const DEADLINE_QUERY = 15 * 1000
-const DEADLINE_QUERY = 10 * 60 * 1000
+const DEADLINE_QUERY = 15 * 1000
+
+const boughts = []
+const TIME_OVER = 20 * 60 * 1000
 
 let ethersInner
 
@@ -53,9 +55,6 @@ const notifyIncoming = async (txs) => {
     await emailSend.send('mev', notifies)
   }
 }
-
-const boughts = []
-const TIME_OVER = 10 * 60 * 1000
 
 const actSimple = async (txs, amt) => {
   // detect all, then sell they when past a while time
