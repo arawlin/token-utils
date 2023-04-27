@@ -127,5 +127,8 @@ describe('uniswap', () => {
 
     const arr = [1, 2, 3, 4]
     console.log(arr, libs.reverseArrayConst(arr))
+
+    const gasPrice = ethers.BigNumber.from('32937405476').add(ethers.utils.parseUnits('1', 'gwei'))
+    console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
   })
 })
