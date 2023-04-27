@@ -57,17 +57,24 @@ const boughts = []
 const TIME_OVER = 10 * 60 * 1000
 
 const actSimple = async (txs, amt) => {
-  // TODO: detect all, then sell they when past a while time
+  // detect all, then sell they when past a while time
   for (let i = 0; i < boughts.length; ++i) {
     const b = boughts[i]
     if (timeOver(b.timestamp, TIME_OVER)) {
-      await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
-      await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
-        ethersInner,
-        b.path.reverse(),
-        ethersInner.BigNumber.from(100),
-        ethersInner.BigNumber.from(100),
-      )
+      try {
+        await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
+        await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
+          ethersInner,
+          b.path.reverse(),
+          ethersInner.BigNumber.from(100),
+          ethersInner.BigNumber.from(100),
+        )
+      } catch (e) {
+        console.log('TIME_OVER error', b, e)
+        await emailSend.send('mev TIME_OVER error', timeNow() + b.toString())
+      }
+
+      // anyhow remove it, avoid cost more fee
       boughts.splice(i, 1)
       --i
     }
@@ -102,7 +109,32 @@ const actSimple = async (txs, amt) => {
           // approve first
           await uniswapUtils.approveRouter(ethersInner, path[path.length - 1])
         } else if (t.data.startWith(uniswapUtils.mapFuncHash('swapExactTokensForETHSupportingFeeOnTransferTokens'))) {
+          const dataRipe = uniswapUtils.decodeABIUniswapV2Router02(ethersInner, 'swapExactTokensForETHSupportingFeeOnTransferTokens', t.data)
+          const addrToken = dataRipe.path[0]
+
           // sell
+          for (let i = 0; i < boughts.length; ++i) {
+            const b = boughts[i]
+            if (addrToken.toLowerCase() === b.addrToken.toLowerCase()) {
+              try {
+                await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
+                await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
+                  ethersInner,
+                  b.path.reverse(),
+                  ethersInner.BigNumber.from(100),
+                  ethersInner.BigNumber.from(100),
+                  t,
+                )
+              } catch (e) {
+                console.log('meet sell tx error', b, e)
+                await emailSend.send('meet sell tx error', timeNow() + b.toString())
+              }
+
+              // anyhow remove it, avoid cost more fee
+              boughts.splice(i, 1)
+              break
+            }
+          }
         }
       } else if (t.to === process.env.addrUniversalRouter) {
         // buy
@@ -112,7 +144,7 @@ const actSimple = async (txs, amt) => {
       // remove liquidation
     } catch (e) {
       console.error('actSimple', t.hashTransaction, e)
-      await emailSend.send('mev actSimple error', timeNow(), t.hashTransaction)
+      await emailSend.send('mev actSimple error', timeNow() + t.hashTransaction)
     }
   }
 }

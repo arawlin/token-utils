@@ -7,7 +7,7 @@ const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').a
 
 const DELAY_DEADLINE = 120
 const RATIO_MAX = BigNumber.from(100)
-const RATIO_SLIPPAGE = BigNumber.from(10)
+const RATIO_SLIPPAGE = BigNumber.from(20)
 const TEN = BigNumber.from(10)
 
 const mapFuncHash = {
@@ -72,9 +72,9 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
   gasPrice = gasPrice.mul(gasPricePercent).div(RATIO_MAX)
   console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
 
-  // const amounts = await router.getAmountsOut(value, path)
-  // const amountOutMin = amounts[path.length - 1].mul(RATIO_MAX.sub(RATIO_SLIPPAGE)).div(RATIO_MAX)
-  const amountOutMin = ethers.constants.Zero
+  const amounts = await router.getAmountsOut(value, path)
+  const amountOutMin = amounts[path.length - 1].mul(RATIO_MAX.sub(RATIO_SLIPPAGE)).div(RATIO_MAX)
+  // const amountOutMin = ethers.constants.Zero
 
   let gasLimitRaw
   if (txLike) {
