@@ -1,4 +1,4 @@
-const { sleep, timeOver, timeNow } = require('../libs')
+const { sleep, reverseArrayConst, timeOver } = require('../libs')
 const emailSend = require('../libs/emailSend')
 const uniswapUtils = require('../libs/uniswapUtils')
 const dbTransaction = require('../db/dbTransaction')
@@ -6,7 +6,8 @@ const dbTransaction = require('../db/dbTransaction')
 const TIME_LOOP = 1 * 1000
 
 const NUM_QUERY = 10
-const DEADLINE_QUERY = 15 * 1000
+// const DEADLINE_QUERY = 15 * 1000
+const DEADLINE_QUERY = 10 * 60 * 1000
 
 let ethersInner
 
@@ -40,10 +41,10 @@ const incoming = async (mev) => {
 const notifyIncoming = async (txs) => {
   let notifies = ''
   for (const t of txs) {
-    if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && t.value.gt(ethersInner.BigNumber.from(0))) {
+    if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x7ff36ab5')) && ethersInner.BigNumber.from(t.value).gt(ethersInner.BigNumber.from(0))) {
       // buy
       notifies += `buy - ${Number(ethersInner.utils.formatEther(t.value)).toFixed(4)}eth || `
-    } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && t.value.eq(ethersInner.BigNumber.from(0))) {
+    } else if ((t.data.indexOf('0x3593564c') || t.data.indexOf('0x791ac947')) && ethersInner.BigNumber.from(t.value).eq(ethersInner.BigNumber.from(0))) {
       // sell
       notifies += `sell || `
     }
@@ -65,13 +66,13 @@ const actSimple = async (txs, amt) => {
         await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
         await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
           ethersInner,
-          b.path.reverse(),
+          reverseArrayConst(b.path),
           ethersInner.BigNumber.from(100),
           ethersInner.BigNumber.from(100),
         )
       } catch (e) {
         console.log('TIME_OVER error', b, e)
-        await emailSend.send('mev TIME_OVER error', timeNow() + b.toString())
+        await emailSend.send('mev TIME_OVER error', b.toString())
       }
 
       // anyhow remove it, avoid cost more fee
@@ -83,7 +84,7 @@ const actSimple = async (txs, amt) => {
   for (const t of txs) {
     try {
       if (t.to === process.env.addrUniswapV2Router02) {
-        if (t.data.startWith(uniswapUtils.mapFuncHash('swapExactETHForTokens'))) {
+        if (t.data.startsWith(uniswapUtils.mapFuncHash.swapExactETHForTokens)) {
           // buy
           if (boughts.length > 0) {
             return
@@ -108,7 +109,7 @@ const actSimple = async (txs, amt) => {
 
           // approve first
           await uniswapUtils.approveRouter(ethersInner, path[path.length - 1])
-        } else if (t.data.startWith(uniswapUtils.mapFuncHash('swapExactTokensForETHSupportingFeeOnTransferTokens'))) {
+        } else if (t.data.startsWith(uniswapUtils.mapFuncHash.swapExactTokensForETHSupportingFeeOnTransferTokens)) {
           const dataRipe = uniswapUtils.decodeABIUniswapV2Router02(ethersInner, 'swapExactTokensForETHSupportingFeeOnTransferTokens', t.data)
           const addrToken = dataRipe.path[0]
 
@@ -120,14 +121,14 @@ const actSimple = async (txs, amt) => {
                 await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
                 await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
                   ethersInner,
-                  b.path.reverse(),
+                  dataRipe.path,
                   ethersInner.BigNumber.from(100),
                   ethersInner.BigNumber.from(100),
                   t,
                 )
               } catch (e) {
                 console.log('meet sell tx error', b, e)
-                await emailSend.send('meet sell tx error', timeNow() + b.toString())
+                await emailSend.send('meet sell tx error', b.toString())
               }
 
               // anyhow remove it, avoid cost more fee
@@ -144,7 +145,7 @@ const actSimple = async (txs, amt) => {
       // remove liquidation
     } catch (e) {
       console.error('actSimple', t.hashTransaction, e)
-      await emailSend.send('mev actSimple error', timeNow() + t.hashTransaction)
+      await emailSend.send('mev actSimple error', t.hashTransaction)
     }
   }
 }

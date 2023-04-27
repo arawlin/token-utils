@@ -1,4 +1,5 @@
 const { ethers } = require('hardhat')
+const libs = require('../libs')
 const uni = require('../libs/uniswapUtils')
 const { filterABI } = require('../libs/etherUtils')
 const dbTransaction = require('../db/dbTransaction')
@@ -120,5 +121,11 @@ describe('uniswap', () => {
       '0x791ac947000000000000000000000000000000000000000003b474e081a3442cf0a731820000000000000000000000000000000000000000000000000536e9bc04f5d69b00000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000af2358e98683265cbd3a48509123d390ddf54534000000000000000000000000000000000000000000000000000000006449fb9200000000000000000000000000000000000000000000000000000000000000020000000000000000000000005227a63fd11ada420f25d2f5bf505a6fa365f356000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     const dataRipe = uni.decodeABIUniswapV2Router02(ethers, 'swapExactTokensForETHSupportingFeeOnTransferTokens', data)
     console.log(dataRipe)
+
+    console.log(dataRipe.path)
+    console.log(libs.reverseArrayConst(dataRipe.path))
+
+    const arr = [1, 2, 3, 4]
+    console.log(arr, libs.reverseArrayConst(arr))
   })
 })

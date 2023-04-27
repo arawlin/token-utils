@@ -17,8 +17,17 @@ const timeThen = (timestamp) => {
   return new Date(timestamp).toISOString()
 }
 
+const reverseArrayConst = (arr) => {
+  const arrReverse = []
+  for (let i = arr.length - 1; i >= 0; --i) {
+    arrReverse.push(arr[i])
+  }
+  return arrReverse
+}
+
 module.exports = {
   sleep,
+  reverseArrayConst,
   timeIntervalSec,
   timeOver,
   timeNow,
