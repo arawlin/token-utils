@@ -10,7 +10,7 @@ const DEADLINE_QUERY = 15 * 1000
 
 let ethersInner
 
-const action = async ({ mev }, { ethers }) => {
+const action = async ({ mev, amt }, { ethers }) => {
   // wait db connect
   await sleep(1 * 1000)
   console.log('task started')
@@ -19,7 +19,7 @@ const action = async ({ mev }, { ethers }) => {
   while (true) {
     const txs = await incoming(mev)
 
-    await actSimple(txs)
+    await actSimple(txs, amt)
     await notifyIncoming(txs)
 
     await sleep(TIME_LOOP)
@@ -56,16 +56,17 @@ const notifyIncoming = async (txs) => {
 const boughts = []
 const TIME_OVER = 10 * 60 * 1000
 
-const actSimple = async (txs) => {
+const actSimple = async (txs, amt) => {
   // TODO: detect all, then sell they when past a while time
   for (let i = 0; i < boughts.length; ++i) {
     const b = boughts[i]
     if (timeOver(b.timestamp, TIME_OVER)) {
+      await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
       await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
         ethersInner,
         b.path.reverse(),
-        ethersInner.utils.BigNumber.from(100),
-        ethersInner.utils.BigNumber.from(100),
+        ethersInner.BigNumber.from(100),
+        ethersInner.BigNumber.from(100),
       )
       boughts.splice(i, 1)
       --i
@@ -83,14 +84,23 @@ const actSimple = async (txs) => {
 
           // path
           const dataRipe = uniswapUtils.decodeABIUniswapV2Router02(ethersInner, 'swapExactETHForTokens', t.data)
-          if (dataRipe.path[0] !== process.env.addrWETH) {
+          const path = dataRipe.path
+          if (path[0] !== process.env.addrWETH) {
             continue
           }
 
-          const boughtInfo = await uniswapUtils.swapExactETHForTokens(ethersInner, dataRipe.path, '0.05', ethersInner.utils.BigNumber.from(110))
-          boughtInfo.timestamp = new Date().getTime()
-          boughtInfo.path = dataRipe.path
+          const gasPricePercent = ethersInner.BigNumber.from(110)
+          await uniswapUtils.swapExactETHForTokens(ethersInner, path, amt, gasPricePercent)
+          const boughtInfo = {
+            txLike: t,
+            addrToken: path[path.length - 1],
+            path,
+            timestamp: new Date().getTime(),
+          }
           boughts.push(boughtInfo)
+
+          // approve first
+          await uniswapUtils.approveRouter(ethersInner, path[path.length - 1])
         } else if (t.data.startWith(uniswapUtils.mapFuncHash('swapExactTokensForETHSupportingFeeOnTransferTokens'))) {
           // sell
         }
@@ -110,6 +120,9 @@ const actSimple = async (txs) => {
 module.exports = {
   name: 'mevActSimple',
   description: 'mev act simple',
-  params: [{ name: 'mev', description: 'address of mev' }],
+  params: [
+    { name: 'mev', description: 'address of mev' },
+    { name: 'amt', description: 'amount buying' },
+  ],
   action,
 }

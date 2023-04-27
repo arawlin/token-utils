@@ -26,7 +26,7 @@ describe('uniswap', () => {
     console.log(gasPrice, ethers.utils.formatUnits(gasPrice, 'gwei'), 'gwei')
   })
 
-  it('router info', async () => {
+  it.skip('router info', async () => {
     // usdt - 0xdAC17F958D2ee523a2206206994597C13D831ec7
     const addrToken = '0xdAC17F958D2ee523a2206206994597C13D831ec7'
     const token = new ethers.Contract(addrToken, abiERC20, ethers.provider)
@@ -55,7 +55,7 @@ describe('uniswap', () => {
     console.log(dataRipe.path)
   })
 
-  it('transaction', async () => {
+  it.skip('transaction', async () => {
     const hash = '0xde3f8c490d51f404f434d9f1165f8b80767fa6b0249fb0a127269a364dadb59e'
     const tx = await ethers.provider.getTransaction(hash)
     const txr = await ethers.provider.getTransactionReceipt(hash)
@@ -108,6 +108,10 @@ describe('uniswap', () => {
     console.log('bal', signer.address, ethers.utils.formatEther(bal))
 
     const path = [process.env.addrWETH, '0xdAC17F958D2ee523a2206206994597C13D831ec7']
-    await uni.swapExactETHForTokens(ethers, path, '0.005')
+
+    // await uni.swapExactETHForTokens(ethers, path, '0.005')
+
+    // await uni.approveRouter(ethers, path[path.length - 1])
+    // await uni.swapExactTokensForETHSupportingFeeOnTransferTokens(ethers, path.reverse(), ethers.BigNumber.from(100), ethers.BigNumber.from(100))
   })
 })
