@@ -77,7 +77,7 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
   // const amountOutMin = ethers.constants.Zero
 
   let gasLimitRaw
-  if (txLike.gasUsed) {
+  if (txLike?.gasUsed) {
     gasLimitRaw = BigNumber.from(txLike.gasUsed)
   } else {
     gasLimitRaw = await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
@@ -140,7 +140,7 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
   const amountOutMin = ethers.constants.Zero
 
   let gasPrice
-  if (txLike.gasPrice) {
+  if (txLike?.gasPrice) {
     // add 1 gwei more than he
     gasPrice = ethers.BigNumber.from(txLike.gasPrice).add(ethers.utils.parseUnits('1', 'gwei'))
   } else {
@@ -150,7 +150,7 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
   console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
 
   let gasLimitRaw
-  if (txLike.gasUsed) {
+  if (txLike?.gasUsed) {
     gasLimitRaw = BigNumber.from(txLike.gasUsed)
   } else {
     gasLimitRaw = await router.estimateGas.swapExactTokensForETHSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, signer.address, deadline, {
