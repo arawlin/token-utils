@@ -42,6 +42,7 @@ const action = async ({ a, b }, { ethers }) => {
             hashTransaction: t.hash,
             blockNumber: t.blockNumber,
             status: tr.status,
+            from: t.from,
             to: t.to,
             value: t.value.toString(),
             valueWrap: ethers.utils.formatEther(t.value),

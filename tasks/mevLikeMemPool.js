@@ -1,8 +1,10 @@
-const { sleep } = require('../libs')
+const { sleep, timeOver, timeThen } = require('../libs')
+const dbTransaction = require('../db/dbTransaction')
 
-const TIMEOUT = 12
+const TIMEOUT = 12 * 1000
+const TIME_LOOP = 0.5 * 1000
 
-const action = async ({ mev, router }, { ethers, web3 }) => {
+const action = async ({ mev }, { ethers, web3 }) => {
   if (!mev) {
     console.log('address not config')
     return
@@ -16,7 +18,7 @@ const action = async ({ mev, router }, { ethers, web3 }) => {
       console.error(error)
       return
     }
-    txpool.push({ ptx, delay: 0 })
+    txpool.push({ ptx, time: new Date().getTime() })
     console.log('1', ptx)
   })
 
@@ -25,37 +27,52 @@ const action = async ({ mev, router }, { ethers, web3 }) => {
     while (txpool.length > 0) {
       try {
         const o = txpool.shift()
-        console.log('2', o)
+        // console.log('2', o)
 
         const t = await ethers.provider.getTransaction(o.ptx)
         if (!t) {
-          if (++o.delay <= TIMEOUT) {
+          if (!timeOver(o.time, TIMEOUT)) {
             txpoolrest.push(o)
           }
           continue
         }
-        console.log('3', t)
+        // console.log('3', t)
+
+        if (t.confirmations > 0) {
+          continue
+        }
 
         if (t.from.toLowerCase() !== mev.toLowerCase()) {
           continue
         }
         console.log('4', t)
+
+        const tw = {
+          hashTransaction: t.hash,
+          from: t.from,
+          to: t.to,
+          value: t.value.toString(),
+          valueWrap: ethers.utils.formatEther(t.value),
+          gasPrice: t.gasPrice.toString(),
+          gasPriceWrap: ethers.utils.formatUnits(t.gasPrice, 'gwei'),
+          data: t.data,
+          timestamp: new Date().getTime() / 1000, // use current time
+          timestampWrap: timeThen(new Date().getTime()),
+        }
+        await dbTransaction.save(mev, tw)
       } catch (e) {
         console.error(e)
       }
     }
     txpool.push(...txpoolrest)
 
-    await sleep(1 * 1000)
+    await sleep(TIME_LOOP)
   }
 }
 
 module.exports = {
   name: 'mevLikeMemPool',
   description: 'mev like others',
-  params: [
-    { name: 'mev', description: 'address of mev', defaultValue: '' },
-    { name: 'router', description: 'address of router', defaultValue: '' },
-  ],
+  params: [{ name: 'mev', description: 'address of mev', defaultValue: '' }],
   action,
 }
