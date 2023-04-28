@@ -62,7 +62,7 @@ const actSimple = async (txs, amt) => {
     const b = boughts[i]
     if (timeOver(b.timestamp, TIME_OVER)) {
       try {
-        await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
+        await uniswapUtils.approveRouter(ethersInner, b.addrToken)
         await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
           ethersInner,
           reverseArrayConst(b.path),
@@ -107,7 +107,7 @@ const actSimple = async (txs, amt) => {
           boughts.push(boughtInfo)
 
           // approve first
-          await uniswapUtils.approveRouter(ethersInner, path[path.length - 1])
+          await uniswapUtils.approveRouter(ethersInner, boughtInfo.addrToken)
         } else if (t.data.startsWith(uniswapUtils.mapFuncHash.swapExactTokensForETHSupportingFeeOnTransferTokens)) {
           const dataRipe = uniswapUtils.decodeABIUniswapV2Router02(ethersInner, 'swapExactTokensForETHSupportingFeeOnTransferTokens', t.data)
           const addrToken = dataRipe.path[0]
@@ -117,7 +117,7 @@ const actSimple = async (txs, amt) => {
             const b = boughts[i]
             if (addrToken.toLowerCase() === b.addrToken.toLowerCase()) {
               try {
-                await uniswapUtils.approveRouter(ethersInner, b.path[b.path.length - 1])
+                await uniswapUtils.approveRouter(ethersInner, b.addrToken)
                 await uniswapUtils.swapExactTokensForETHSupportingFeeOnTransferTokens(
                   ethersInner,
                   dataRipe.path,

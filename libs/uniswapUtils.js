@@ -8,7 +8,7 @@ const abiERC20 = require('@openzeppelin/contracts/build/contracts/ERC20.json').a
 const DELAY_DEADLINE = 120
 const RATIO_MAX = BigNumber.from(100)
 const RATIO_SLIPPAGE = BigNumber.from(20)
-const TEN = BigNumber.from(10)
+const MULITY_GAS_LIMIT = BigNumber.from(3)
 
 const mapFuncHash = {
   swapExactETHForTokens: '0x7ff36ab5',
@@ -49,8 +49,7 @@ const approveRouter = async (ethers, addrToken) => {
   console.log(`allowance - ${allowance.toString()}, balance - ${balToken.toString()}`)
   if (balToken.gt(allowance)) {
     const tx = await token.approve(process.env.addrUniswapV2Router02, ethers.constants.MaxUint256)
-    const txr = await tx.wait()
-    console.log(`approve - hash: ${txr.transactionHash}`)
+    console.log(`approve - hash: ${tx.hash}`)
   }
 }
 
@@ -82,12 +81,13 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
   } else {
     gasLimitRaw = await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
   }
-  const gasLimit = gasLimitRaw.mul(ethers.constants.Two)
+  const gasLimit = gasLimitRaw.mul(MULITY_GAS_LIMIT)
   console.log('gasLimit', gasLimitRaw, gasLimit)
 
   const tx = await router.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice, gasLimit })
   const txr = await tx.wait()
-  console.log(`swapExactETHForTokens - hash: ${txr.transactionHash}, value: ${valueETH}, gas: ${ethers.utils.formatEther(tx.gasPrice.mul(txr.gasUsed))}`)
+  console.log(`swapExactETHForTokens - hash: ${tx.hash}, value: ${valueETH}`)
+  // console.log(`swapExactETHForTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
 
   const addrToken = path[path.length - 1]
   const token = new ethers.Contract(addrToken, abiERC20, signer)
@@ -157,14 +157,13 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
       gasPrice,
     })
   }
-  const gasLimit = gasLimitRaw.mul(ethers.constants.Two)
+  const gasLimit = gasLimitRaw.mul(MULITY_GAS_LIMIT)
   console.log('gasLimit', gasLimitRaw, gasLimit)
 
   const tx = await router.swapExactTokensForETHSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, signer.address, deadline, { gasPrice, gasLimit })
   const txr = await tx.wait()
-  console.log(
-    `swapExactTokensForETHSupportingFeeOnTransferTokens - hash: ${txr.transactionHash}, gas: ${ethers.utils.formatEther(tx.gasPrice.mul(txr.gasUsed))}`,
-  )
+  console.log(`swapExactTokensForETHSupportingFeeOnTransferTokens - hash: ${tx.hash}`)
+  // console.log(`swapExactTokensForETHSupportingFeeOnTransferTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
 
   return true
 }
