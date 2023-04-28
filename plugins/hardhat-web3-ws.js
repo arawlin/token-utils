@@ -46,6 +46,31 @@ extendEnvironment((env) => {
     const provider = new Web3WsProvider(env.network.config.urlws, options)
       .on('connect', () => console.log('Web3WsProvider - connect'))
       .on('reconnect', () => console.log('Web3WsProvider - reconnect'))
-    return new Web3(provider)
+    const web3 = new Web3(provider)
+
+    web3.eth.extend({
+      property: 'txpool',
+      methods: [
+        {
+          name: 'content',
+          call: 'txpool_content',
+        },
+        {
+          name: 'inspect',
+          call: 'txpool_inspect',
+        },
+        {
+          name: 'status',
+          call: 'txpool_status',
+        },
+        {
+          name: 'contentFrom',
+          call: 'txpool_contentFrom',
+          params: 1,
+          inputFormatter: [web3.extend.formatters.inputAddressFormatter],
+        },
+      ],
+    })
+    return web3
   })
 })

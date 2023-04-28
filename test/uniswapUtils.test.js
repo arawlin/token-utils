@@ -1,4 +1,4 @@
-const { ethers } = require('hardhat')
+const { ethers, web3 } = require('hardhat')
 const libs = require('../libs')
 const uni = require('../libs/uniswapUtils')
 const { filterABI } = require('../libs/etherUtils')
@@ -130,5 +130,13 @@ describe('uniswap', () => {
 
     const gasPrice = ethers.BigNumber.from('32937405476').add(ethers.utils.parseUnits('1', 'gwei'))
     console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
+  })
+
+  it('web3 extend', async () => {
+    let res = await web3.eth.txpool.status()
+    console.log(res)
+
+    res = await web3.eth.txpool.contentFrom('0xB8f9FbE9075224237E62c96b7c3Df7706f2cF860')
+    console.log(res)
   })
 })
