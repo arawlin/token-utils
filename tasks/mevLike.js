@@ -50,6 +50,7 @@ const action = async ({ a, b }, { ethers }) => {
             gasPriceWrap: ethers.utils.formatUnits(t.gasPrice, 'gwei'),
             gasUsed: tr.gasUsed.toString(),
             gasFee: ethers.utils.formatEther(t.gasPrice.mul(tr.gasUsed)),
+            gasLimit: t.gasLimit.toString(),
             data: t.data,
             timestamp: block.timestamp,
             timestampWrap: timeThen(block.timestamp * 1000),

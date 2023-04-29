@@ -10,6 +10,7 @@ transaction -
   "gasFee": "0.00371764495607612",
   "gasPrice": "32937405476",
   "gasPriceWrap": "32.937405476",
+  "gasLimit": "222222",
   "gasUsed": "112870",
   "status": 1,
   "timestamp": 1682579507,

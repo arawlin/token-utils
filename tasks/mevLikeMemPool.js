@@ -55,6 +55,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
           valueWrap: ethers.utils.formatEther(t.value),
           gasPrice: t.gasPrice.toString(),
           gasPriceWrap: ethers.utils.formatUnits(t.gasPrice, 'gwei'),
+          gasLimit: t.gasLimit.toString(),
           data: t.data,
           timestamp: new Date().getTime() / 1000, // use current time
           timestampWrap: timeThen(new Date().getTime()),
