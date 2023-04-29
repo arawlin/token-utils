@@ -133,10 +133,16 @@ describe('uniswap', () => {
   })
 
   it('web3 extend', async () => {
-    let res = await web3.eth.txpool.status()
+    let res = await web3.eth.txpool.content()
+    console.log(res, Object.keys(res.pending).length, Object.keys(res.queued).length)
+
+    res = await web3.eth.txpool.status()
     console.log(res)
 
-    res = await web3.eth.txpool.contentFrom('0xB8f9FbE9075224237E62c96b7c3Df7706f2cF860')
+    res = await web3.eth.txpool.contentFrom('0xffc19790A2Ac036AcAEc5e56db765bA4Bec70bB6')
+    console.log(res)
+
+    res = await web3.eth.txpool.contentFrom('0x154421b5abFd5FC12b16715E91d564AA47c8DDee')
     console.log(res)
   })
 })
