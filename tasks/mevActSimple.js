@@ -123,6 +123,7 @@ const actSimple = async (txs, amt) => {
                   dataRipe.path,
                   ethersInner.BigNumber.from(100),
                   ethersInner.BigNumber.from(100),
+                  '0.005',
                   t,
                 )
               } catch (e) {
