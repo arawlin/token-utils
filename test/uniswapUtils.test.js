@@ -56,12 +56,30 @@ describe('uniswap', () => {
     console.log(dataRipe.path)
   })
 
-  it.skip('transaction', async () => {
-    const hash = '0xde3f8c490d51f404f434d9f1165f8b80767fa6b0249fb0a127269a364dadb59e'
-    const tx = await ethers.provider.getTransaction(hash)
-    const txr = await ethers.provider.getTransactionReceipt(hash)
+  it('transaction', async () => {
+    // const hash = '0x9bddd37c3e8309c00bbc453d49b1f6aef0ea1c3d2a305c6175482c6b56f39cc1'
+    // const tx = await ethers.provider.getTransaction(hash)
+    // const txr = await ethers.provider.getTransactionReceipt(hash)
+    // console.log(tx)
+    // console.log(txr)
 
-    console.log(tx.gasPrice.toString(), txr.gasUsed.toString(), ethers.utils.formatEther(tx.gasPrice.mul(txr.gasUsed)))
+    // console.log(tx.gasPrice.toString(), txr.gasUsed.toString(), ethers.utils.formatEther(tx.gasPrice.mul(txr.gasUsed)))
+
+    const last = 17159715
+    const block = await ethers.provider.getBlock(last)
+    console.log(block)
+
+    const bt = await ethers.provider.getBlockWithTransactions(last)
+
+    for (const t of bt.transactions) {
+      if (t.from.toLowerCase() !== '0xaf2358e98683265cbd3a48509123d390ddf54534'.toLowerCase()) {
+        continue
+      }
+
+      const tr = await ethers.provider.getTransactionReceipt(t.hash)
+      console.log(t)
+      console.log(tr)
+    }
   })
 
   it.skip('token', async () => {
@@ -132,7 +150,7 @@ describe('uniswap', () => {
     console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
   })
 
-  it('web3 extend', async () => {
+  it.skip('web3 extend', async () => {
     let res = await web3.eth.txpool.content()
     console.log(res, Object.keys(res.pending).length, Object.keys(res.queued).length)
 

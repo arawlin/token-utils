@@ -49,6 +49,7 @@ const approveRouter = async (ethers, addrToken) => {
   console.log(`allowance - ${allowance.toString()}, balance - ${balToken.toString()}`)
   if (balToken.gt(allowance)) {
     const tx = await token.approve(process.env.addrUniswapV2Router02, ethers.constants.MaxUint256)
+    await tx.wait()
     console.log(`approve - hash: ${tx.hash}`)
   }
 }
