@@ -1,5 +1,5 @@
 const { types } = require('hardhat/config')
-const { sleep, timeThen } = require('../libs')
+const { sleep, timeNow, timeThen } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
 
 const TIME_LOOP = 0.5 * 1000
@@ -59,7 +59,7 @@ const action = async ({ a, b }, { ethers }) => {
           console.log(tw)
         }
       } catch (e) {
-        console.error(e)
+        console.error(timeNow(), e)
       }
     } while (false)
 
