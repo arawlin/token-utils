@@ -11,6 +11,8 @@ const DEADLINE_QUERY = 15 * 1000
 const boughts = []
 const TIME_OVER = 20 * 60 * 1000
 
+const AMOUNT_OVER = 0.5
+
 let ethersInner
 
 const action = async ({ mev, amt }, { ethers }) => {
@@ -87,6 +89,11 @@ const actSimple = async (txs, amt) => {
           // buy
           if (boughts.length > 0) {
             return
+          }
+
+          // AMOUNT_OVER
+          if (Number(t.valueWrap) < AMOUNT_OVER) {
+            continue
           }
 
           // path
