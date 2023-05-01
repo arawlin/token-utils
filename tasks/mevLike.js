@@ -1,5 +1,5 @@
 const { types } = require('hardhat/config')
-const { sleep, timeNow, timeThen } = require('../libs')
+const { sleep, timeNow, timeThen, timeElapse } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
 
 const TIME_LOOP = 0.5 * 1000
@@ -12,16 +12,15 @@ const action = async ({ a, b }, { ethers }) => {
 
   let last = b || (await ethers.provider.getBlockNumber())
   while (true) {
-    const txs = []
-
     do {
       try {
+        const timeStart = new Date().getTime()
+
         const cur = await ethers.provider.getBlockNumber()
         if (cur === last) {
           break
         }
         last++
-        console.log(last, cur)
 
         const block = await ethers.provider.getBlock(last)
         const bt = await ethers.provider.getBlockWithTransactions(last)
@@ -29,6 +28,7 @@ const action = async ({ a, b }, { ethers }) => {
           break
         }
 
+        const txs = []
         for (const t of bt.transactions) {
           if (t.from.toLowerCase() !== a.toLowerCase()) {
             continue
@@ -54,18 +54,21 @@ const action = async ({ a, b }, { ethers }) => {
             data: t.data,
             timestamp: block.timestamp,
             timestampWrap: timeThen(block.timestamp * 1000),
+            timeUpdate: timeNow(),
           }
           txs.push(tw)
           console.log(tw)
         }
+
+        if (txs.length > 0) {
+          await dbTransaction.saveAll(a, txs)
+        }
+
+        console.log(last, cur, `elapse - ${timeElapse(timeStart)}`)
       } catch (e) {
-        console.error(timeNow(), e)
+        console.error(timeNow(), last, e)
       }
     } while (false)
-
-    if (txs.length > 0) {
-      await dbTransaction.saveAll(a, txs)
-    }
 
     await sleep(TIME_LOOP)
   }

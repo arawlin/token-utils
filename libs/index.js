@@ -5,6 +5,10 @@ const timeIntervalSec = (interval) => {
   return parseInt(new Date().getTime() / 1000 + interval)
 }
 
+const timeElapse = (start) => {
+  return new Date().getTime() - start
+}
+
 const timeOver = (last, over) => {
   return new Date().getTime() - last > over
 }
@@ -29,6 +33,7 @@ module.exports = {
   sleep,
   reverseArrayConst,
   timeIntervalSec,
+  timeElapse,
   timeOver,
   timeNow,
   timeThen,
