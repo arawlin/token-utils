@@ -100,11 +100,7 @@ const actSimple = async (txs, amt) => {
             continue
           }
 
-          // only first buy
-          if (dbTransaction.countContract(mevInner, t.to) > 0) {
-            console.log(`dbTransaction.countContract(mevInner, ${t.to}) > 0`)
-            continue
-          }
+          // TODO: only first buy
 
           // path
           const dataRipe = uniswapUtils.decodeABIUniswapV2Router02(ethersInner, 'swapExactETHForTokens', t.data)
