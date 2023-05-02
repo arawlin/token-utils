@@ -56,7 +56,7 @@ describe('uniswap', () => {
     console.log(dataRipe.path)
   })
 
-  it('transaction', async () => {
+  it.skip('transaction', async () => {
     // const hash = '0x9bddd37c3e8309c00bbc453d49b1f6aef0ea1c3d2a305c6175482c6b56f39cc1'
     // const tx = await ethers.provider.getTransaction(hash)
     // const txr = await ethers.provider.getTransactionReceipt(hash)
@@ -65,7 +65,7 @@ describe('uniswap', () => {
 
     // console.log(tx.gasPrice.toString(), txr.gasUsed.toString(), ethers.utils.formatEther(tx.gasPrice.mul(txr.gasUsed)))
 
-    const last = 17159715
+    const last = 17170165
     const block = await ethers.provider.getBlock(last)
     console.log(block)
 
@@ -93,10 +93,11 @@ describe('uniswap', () => {
     console.log(nmToken, ethers.utils.formatUnits(balToken, decimalToken), value, priceToken.toString(), ethers.constants.MaxUint256.toHexString())
   })
 
-  it.skip('mongdb transaction', async () => {
+  it('mongdb transaction', async () => {
+    const addrFrom = '0xAf2358e98683265cBd3a48509123d390dDf54534'
     let idLast
     while (true) {
-      const txs = await dbTransaction.findLast('0xAf2358e98683265cBd3a48509123d390dDf54534', idLast, 2 * 3600 * 1000, 2)
+      const txs = await dbTransaction.findLast(addrFrom, idLast, 2 * 3600 * 1000, 2)
       if (!txs || txs.length === 0) {
         break
       }
@@ -104,9 +105,10 @@ describe('uniswap', () => {
 
       console.log('------', idLast, txs.length, txs)
     }
-  })
 
-  it('uniswap sdk', async () => {})
+    const count = await dbTransaction.countContract(addrFrom, '0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B')
+    console.log(count)
+  })
 
   it.skip('splice in for', async () => {
     const a = [1, 2, 3]

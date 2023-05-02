@@ -11,8 +11,9 @@ const DEADLINE_QUERY = 15 * 1000
 const boughts = []
 const TIME_OVER = 20 * 60 * 1000
 
-const AMOUNT_OVER = 0.5
+const AMOUNT_OVER = 0.2
 
+let mevInner
 let ethersInner
 
 const action = async ({ mev, amt }, { ethers }) => {
@@ -20,6 +21,7 @@ const action = async ({ mev, amt }, { ethers }) => {
   await sleep(1 * 1000)
   console.log('task started')
 
+  mevInner = mev
   ethersInner = ethers
   while (true) {
     const txs = await incoming(mev)
@@ -88,11 +90,19 @@ const actSimple = async (txs, amt) => {
         if (t.data.startsWith(uniswapUtils.mapFuncHash.swapExactETHForTokens)) {
           // buy
           if (boughts.length > 0) {
+            console.log('boughts.length > 0')
             return
           }
 
           // AMOUNT_OVER
           if (Number(t.valueWrap) < AMOUNT_OVER) {
+            console.log(`Number(t.valueWrap) < ${AMOUNT_OVER}`)
+            continue
+          }
+
+          // only first buy
+          if (dbTransaction.countContract(mevInner, t.to) > 0) {
+            console.log(`dbTransaction.countContract(mevInner, ${t.to}) > 0`)
             continue
           }
 

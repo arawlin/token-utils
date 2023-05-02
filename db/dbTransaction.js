@@ -24,6 +24,10 @@ transaction -
 const nmColl = 'transaction'
 const constructColl = (addr) => nmColl + '-' + addr.toLowerCase()
 
+const countContract = async (addrFrom, addrContract) => {
+  return await db.countDocuments(constructColl(addrFrom), { to: addrContract })
+}
+
 const findByHashTransaction = async (addr, hashTransaction) => {
   return await db.findOne(constructColl(addr), { hashTransaction })
 }
@@ -56,6 +60,7 @@ const saveAll = async (addr, txs) => {
 }
 
 module.exports = {
+  countContract,
   findByHashTransaction,
   findLast,
   save,
