@@ -78,8 +78,8 @@ module.exports = {
   name: 'mevLike',
   description: 'mev like others',
   params: [
-    { name: 'a', description: 'address of mev', defaultValue: '' },
-    { name: 'b', description: 'last block number', defaultValue: 0, valueType: types.int },
+    { name: 'mev', description: 'address of mev', defaultValue: '' },
+    { name: 'block', description: 'last block number', defaultValue: 0, valueType: types.int },
   ],
   action,
 }
