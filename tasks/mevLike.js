@@ -4,13 +4,13 @@ const dbTransaction = require('../db/dbTransaction')
 
 const TIME_LOOP = 0.5 * 1000
 
-const action = async ({ a, b }, { ethers }) => {
-  if (!a) {
+const action = async ({ mev, block }, { ethers }) => {
+  if (!mev) {
     console.log('address not config')
     return
   }
 
-  let last = b || (await ethers.provider.getBlockNumber())
+  let last = block || (await ethers.provider.getBlockNumber())
   while (true) {
     do {
       try {
@@ -30,7 +30,7 @@ const action = async ({ a, b }, { ethers }) => {
 
         const txs = []
         for (const t of bt.transactions) {
-          if (t.from.toLowerCase() !== a.toLowerCase()) {
+          if (t.from.toLowerCase() !== mev.toLowerCase()) {
             continue
           }
 
@@ -61,7 +61,7 @@ const action = async ({ a, b }, { ethers }) => {
         }
 
         if (txs.length > 0) {
-          await dbTransaction.saveAll(a, txs)
+          await dbTransaction.saveAll(mev, txs)
         }
 
         console.log(last, cur, `elapse - ${timeElapse(timeStart)}`)
