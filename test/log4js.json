@@ -1,0 +1,18 @@
+{
+  "appenders": {
+    "out": {
+      "type": "stdout",
+      "layout": {
+        "type": "pattern",
+        "pattern": "%f{1} %M %A %C %d %p %c %m%n"
+      }
+    }
+  },
+  "categories": {
+    "default": {
+      "appenders": ["out"],
+      "level": "info",
+      "enableCallStack": true
+    }
+  }
+}
