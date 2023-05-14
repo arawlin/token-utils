@@ -1,5 +1,6 @@
 const { BigNumber, utils: ethersUtils } = require('ethers')
 const { timeIntervalSec } = require('./index')
+const logger = require('./logger').getLogger()
 
 const abiUniswapV2Router02 = require('../abis/uniswap/UniswapV2Router02.json')
 const abiUniversalRouter = require('../abis/uniswap/UniversalRouter.json')
@@ -35,7 +36,7 @@ const calcPriceToken = (amtQuot, decimalQuot, amtBase, decimalBase = 18) => {
     const b = Number(ethersUtils.formatUnits(amtBase, decimalBase))
     return ethersUtils.commify(q / b)
   } catch (e) {
-    console.error('calcPriceToken error', e)
+    logger.error(e)
     return 0
   }
 }
@@ -46,11 +47,11 @@ const approveRouter = async (ethers, addrToken) => {
   const token = new ethers.Contract(addrToken, abiERC20, signer)
   const balToken = await token.balanceOf(signer.address)
   const allowance = await token.allowance(signer.address, process.env.addrUniswapV2Router02)
-  console.log(`allowance - ${allowance.toString()}, balance - ${balToken.toString()}`)
+  logger.info(`allowance - ${allowance.toString()}, balance - ${balToken.toString()}`)
   if (balToken.gt(allowance)) {
     const tx = await token.approve(process.env.addrUniswapV2Router02, ethers.constants.MaxUint256)
-    await tx.wait()
-    console.log(`approve - hash: ${tx.hash}`)
+    logger.info(`approve - hash: ${tx.hash}`)
+    // await tx.wait()
   }
 }
 
@@ -70,7 +71,7 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
 
   let gasPrice = await ethers.provider.getGasPrice()
   gasPrice = gasPrice.mul(gasPricePercent).div(RATIO_MAX)
-  console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
+  logger.info('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
 
   const amounts = await router.getAmountsOut(value, path)
   const amountOutMin = amounts[path.length - 1].mul(RATIO_MAX.sub(RATIO_SLIPPAGE)).div(RATIO_MAX)
@@ -83,12 +84,12 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
     gasLimitRaw = await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
   }
   const gasLimit = gasLimitRaw.mul(MULITY_GAS_LIMIT)
-  console.log('gasLimit', gasLimitRaw, gasLimit)
+  logger.info('gasLimit', gasLimitRaw, gasLimit)
 
   const tx = await router.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice, gasLimit })
+  logger.info(`swapExactETHForTokens - hash: ${tx.hash}, value: ${valueETH}`)
   const txr = await tx.wait()
-  console.log(`swapExactETHForTokens - hash: ${tx.hash}, value: ${valueETH}`)
-  // console.log(`swapExactETHForTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
+  // logger.info(`swapExactETHForTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
 
   const addrToken = path[path.length - 1]
   const token = new ethers.Contract(addrToken, abiERC20, signer)
@@ -96,7 +97,7 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
   const balToken = await token.balanceOf(signer.address)
   const decimalToken = await token.decimals()
   const priceToken = calcPriceToken(balToken, decimalToken, value)
-  console.log(`${nmToken} - balToken: ${ethers.utils.formatUnits(balToken, decimalToken)}, price: ${priceToken.toString()}`)
+  logger.info(`${nmToken} - balToken: ${ethers.utils.formatUnits(balToken, decimalToken)}, price: ${priceToken.toString()}`)
 }
 
 const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
@@ -130,11 +131,7 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
   const amounts = await router.getAmountsOut(amountIn, path)
   const amountOut = amounts[path.length - 1]
   if (amountOut.lt(ethers.utils.parseEther(amountOutOverFee))) {
-    console.log(
-      `swapExactTokensForETHSupportingFeeOnTransferTokens - amountOut:${ethers.utils.formatEther(
-        amountOut,
-      )} is less then amountOutOverFee(${amountOutOverFee})`,
-    )
+    logger.warn(`amountOut:${ethers.utils.formatEther(amountOut)} is less then amountOutOverFee(${amountOutOverFee})`)
     return false
   }
 
@@ -148,7 +145,7 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
     gasPrice = await ethers.provider.getGasPrice()
     gasPrice = gasPrice.mul(gasPricePercent).div(RATIO_MAX)
   }
-  console.log('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
+  logger.info('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
 
   let gasLimitRaw
   if (txLike?.gasUsed) {
@@ -159,12 +156,12 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
     })
   }
   const gasLimit = gasLimitRaw.mul(MULITY_GAS_LIMIT)
-  console.log('gasLimit', gasLimitRaw, gasLimit)
+  logger.info('gasLimit', gasLimitRaw, gasLimit)
 
   const tx = await router.swapExactTokensForETHSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, signer.address, deadline, { gasPrice, gasLimit })
+  logger.info(`swapExactTokensForETHSupportingFeeOnTransferTokens - hash: ${tx.hash}`)
   const txr = await tx.wait()
-  console.log(`swapExactTokensForETHSupportingFeeOnTransferTokens - hash: ${tx.hash}`)
-  // console.log(`swapExactTokensForETHSupportingFeeOnTransferTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
+  // logger.info(`swapExactTokensForETHSupportingFeeOnTransferTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
 
   return true
 }
