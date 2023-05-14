@@ -1,7 +1,7 @@
 const NAME_FILE = __filename.split('.')[0].slice(__dirname.length + 1)
-const logger = require('../libs/logger').init(NAME_FILE)
+const logger = require('../libs/logger').getLogger()
 
-const { sleep, timeOver, timeNow, timeThen } = require('../libs')
+const { sleep, timeOver, timeThen } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
 
 const TIME_LOOP = 0.5 * 1000

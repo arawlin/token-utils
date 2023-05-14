@@ -8,6 +8,7 @@ require('@openzeppelin/hardhat-upgrades')
 require('./plugins/hardhat-web3-ws')
 
 require('./db').connect()
+require('./libs/logger').init('app')
 
 console.log('env -------------- ', process.env.NAME)
 
