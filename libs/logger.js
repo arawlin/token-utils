@@ -9,7 +9,7 @@ let logger
 const init = (name, useCategory) => {
   const layout = {
     type: 'pattern',
-    pattern: `%d{yyyy-MM-dd hh:mm:ss.SSS}${useCategory ? ' %c' : ''} %f{1}:%l %p %m`,
+    pattern: `%d{yyyy-MM-dd hh:mm:ss.SSS}${useCategory ? ' %c' : ''} %f{1}:%M:%l %p %m`,
   }
   log4js.configure({
     appenders: {

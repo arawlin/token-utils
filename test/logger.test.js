@@ -34,4 +34,13 @@ describe('logger', () => {
     }
     await logger.shutdown()
   })
+
+  const method111 = () => {
+    const l = logger.getLogger('333')
+    l.info('method test')
+  }
+
+  it('2', () => {
+    method111()
+  })
 })
