@@ -1,3 +1,6 @@
+const NAME_FILE = __filename.split('.')[0].slice(__dirname.length + 1)
+const logger = require('../libs/logger').init(NAME_FILE)
+
 const { sleep, reverseArrayConst, timeOver } = require('../libs')
 const emailSend = require('../libs/emailSend')
 const uniswapUtils = require('../libs/uniswapUtils')
@@ -19,7 +22,7 @@ let ethersInner
 const action = async ({ mev, amt }, { ethers }) => {
   // wait db connect
   await sleep(1 * 1000)
-  console.log('task started')
+  logger.info('task started')
 
   mevInner = mev
   ethersInner = ethers
@@ -74,7 +77,7 @@ const actSimple = async (txs, amt) => {
           ethersInner.BigNumber.from(100),
         )
       } catch (e) {
-        console.log('TIME_OVER error', b, e)
+        logger.error('TIME_OVER error', b, e)
         await emailSend.send('mev TIME_OVER error', b.toString())
       }
 
@@ -90,13 +93,13 @@ const actSimple = async (txs, amt) => {
         if (t.data.startsWith(uniswapUtils.mapFuncHash.swapExactETHForTokens)) {
           // buy
           if (boughts.length > 0) {
-            console.log('boughts.length > 0')
+            logger.warn('boughts.length > 0')
             return
           }
 
           // AMOUNT_OVER
           if (Number(t.valueWrap) < AMOUNT_OVER) {
-            console.log(`Number(t.valueWrap) < ${AMOUNT_OVER}`)
+            logger.warn(`Number(t.valueWrap) < ${AMOUNT_OVER}`)
             continue
           }
 
@@ -140,7 +143,7 @@ const actSimple = async (txs, amt) => {
                   t,
                 )
               } catch (e) {
-                console.log('meet sell tx error', b, e)
+                logger.error('meet sell tx error', b, e)
                 await emailSend.send('meet sell tx error', b.toString())
               }
 
@@ -157,14 +160,14 @@ const actSimple = async (txs, amt) => {
       // add liquidation
       // remove liquidation
     } catch (e) {
-      console.error('actSimple', t.hashTransaction, e)
+      logger.error('actSimple', t.hashTransaction, e)
       await emailSend.send('mev actSimple error', t.hashTransaction)
     }
   }
 }
 
 module.exports = {
-  name: 'mevActSimple',
+  name: NAME_FILE,
   description: 'mev act simple',
   params: [
     { name: 'mev', description: 'address of mev' },

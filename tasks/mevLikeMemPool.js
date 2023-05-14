@@ -1,3 +1,6 @@
+const NAME_FILE = __filename.split('.')[0].slice(__dirname.length + 1)
+const logger = require('../libs/logger').init(NAME_FILE)
+
 const { sleep, timeOver, timeThen } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
 
@@ -6,20 +9,20 @@ const TIME_LOOP = 0.5 * 1000
 
 const action = async ({ mev }, { ethers, web3 }) => {
   if (!mev) {
-    console.log('address not config')
+    logger.warn('address not config')
     return
   }
-  console.log('ethers', await ethers.provider.getNetwork())
-  console.log('web3', web3.currentProvider.url)
+  logger.info('ethers', await ethers.provider.getNetwork())
+  logger.info('web3', web3.currentProvider.url)
 
   const txpool = []
   web3.eth.subscribe('pendingTransactions', async (error, ptx) => {
     if (error) {
-      console.error(error)
+      logger.error(error)
       return
     }
     txpool.push({ ptx, time: new Date().getTime() })
-    console.log('1', ptx)
+    logger.debug('1', ptx)
   })
 
   while (true) {
@@ -27,7 +30,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
     while (txpool.length > 0) {
       try {
         const o = txpool.shift()
-        // console.log('2', o)
+        logger.debug('2', o)
 
         const t = await ethers.provider.getTransaction(o.ptx)
         if (!t) {
@@ -36,16 +39,15 @@ const action = async ({ mev }, { ethers, web3 }) => {
           }
           continue
         }
-        // console.log('3', t)
+        logger.debug('3', t)
 
         if (t.confirmations > 0) {
           continue
         }
-
         if (t.from.toLowerCase() !== mev.toLowerCase()) {
           continue
         }
-        console.log('4', t)
+        logger.info('4', t)
 
         const tw = {
           hashTransaction: t.hash,
@@ -62,7 +64,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
         }
         await dbTransaction.save(mev, tw)
       } catch (e) {
-        console.error(e)
+        logger.error(e)
       }
     }
     txpool.push(...txpoolrest)
@@ -72,7 +74,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
 }
 
 module.exports = {
-  name: 'mevLikeMemPool',
+  name: NAME_FILE,
   description: 'mev like others',
   params: [{ name: 'mev', description: 'address of mev', defaultValue: '' }],
   action,

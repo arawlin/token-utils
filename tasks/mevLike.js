@@ -1,3 +1,6 @@
+const NAME_FILE = __filename.split('.')[0].slice(__dirname.length + 1)
+const logger = require('../libs/logger').init(NAME_FILE)
+
 const { types } = require('hardhat/config')
 const { sleep, timeNow, timeThen, timeElapse } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
@@ -6,7 +9,7 @@ const TIME_LOOP = 0.5 * 1000
 
 const action = async ({ mev, block }, { ethers }) => {
   if (!mev) {
-    console.log('address not config')
+    logger.warn('address not config')
     return
   }
 
@@ -57,16 +60,16 @@ const action = async ({ mev, block }, { ethers }) => {
             timeUpdate: timeNow(),
           }
           txs.push(tw)
-          console.log(tw)
+          logger.info(tw)
         }
 
         if (txs.length > 0) {
           await dbTransaction.saveAll(mev, txs)
         }
 
-        console.log(last, cur, `elapse - ${timeElapse(timeStart)}`)
+        logger.info(last, cur, `elapse - ${timeElapse(timeStart)}`)
       } catch (e) {
-        console.error(timeNow(), last, e)
+        logger.error(last, e)
       }
     } while (false)
 
@@ -75,7 +78,7 @@ const action = async ({ mev, block }, { ethers }) => {
 }
 
 module.exports = {
-  name: 'mevLike',
+  name: NAME_FILE,
   description: 'mev like others',
   params: [
     { name: 'mev', description: 'address of mev', defaultValue: '' },

@@ -1,3 +1,6 @@
+const NAME_FILE = __filename.split('.')[0].slice(__dirname.length + 1)
+const logger = require('../libs/logger').init(NAME_FILE)
+
 const { sleep, timeOver, timeNow, timeThen } = require('../libs')
 const dbTransaction = require('../db/dbTransaction')
 
@@ -6,11 +9,11 @@ const TIMEOUT = 5 * 60 * 1000
 
 const action = async ({ mev }, { ethers, web3 }) => {
   if (!mev) {
-    console.log('address not config')
+    logger.warn('address not config')
     return
   }
-  console.log('ethers', await ethers.provider.getNetwork())
-  console.log('web3', web3.currentProvider.url)
+  logger.info('ethers', await ethers.provider.getNetwork())
+  logger.info('web3', web3.currentProvider.url)
 
   let timeAccum = 0
   const txsaveds = new Map()
@@ -24,7 +27,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
       if (txsaveds.has(t.hash)) {
         continue
       }
-      console.log(t)
+      logger.info(t)
 
       try {
         const tw = {
@@ -44,7 +47,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
 
         txsaveds.set(t.hash, new Date().getTime())
       } catch (e) {
-        console.log('mevLikeMemPoolRPC', timeNow(), e)
+        logger.error(e)
       }
     }
 
@@ -66,7 +69,7 @@ const action = async ({ mev }, { ethers, web3 }) => {
 }
 
 module.exports = {
-  name: 'mevLikeMemPoolRPC',
+  name: NAME_FILE,
   description: 'mev like by geth rpc directly',
   params: [{ name: 'mev', description: 'address of mev', defaultValue: '' }],
   action,
