@@ -6,6 +6,10 @@ describe('logger', () => {
     logger.init('test')
   })
 
+  after(async () => {
+    await logger.shutdown()
+  })
+
   it('1', () => {
     const l = logger.getLogger('111')
     l.debug('this is a debug')
@@ -32,7 +36,6 @@ describe('logger', () => {
       }
       await sleep(1000)
     }
-    await logger.shutdown()
   })
 
   const method111 = () => {

@@ -15,7 +15,7 @@ const init = (name, useCategory) => {
     appenders: {
       console: { type: 'stdout', layout },
       file: { type: 'dateFile', filename: name + '.log', layout, numBackups: 7, compress: false },
-      fileError: { type: 'dateFile', filename: name + '.error.log', layout, pattern: 'yyyy-MM' },
+      fileError: { type: 'file', filename: name + '.error.log', layout, maxLogSize: '20M', backups: 3 },
       filterError: {
         type: 'logLevelFilter',
         appender: 'fileError',
