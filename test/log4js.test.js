@@ -2,6 +2,11 @@ const path = require('path')
 const log4js = require('log4js')
 
 describe('log4js', () => {
+  it('filename', () => {
+    const f1 = __filename.slice(__dirname.length + 1)
+    const f2 = __filename.split('.')[0].slice(__dirname.length + 1)
+    console.log(f1, f2)
+  })
   it('1', () => {
     const logger = log4js.getLogger('test1')
     logger.level = 'debug'

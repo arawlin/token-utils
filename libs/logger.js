@@ -4,10 +4,12 @@ const log4js = require('log4js')
 const LEVEL_LOGGER = process.env.LEVEL_LOGGER
 console.log('LEVEL_LOGGER', LEVEL_LOGGER)
 
-const init = (name) => {
+let logger
+
+const init = (name, useCategory) => {
   const layout = {
     type: 'pattern',
-    pattern: '%d{yyyy-MM-dd hh:mm:ss.SSS} %c %f{1}:%l %p %m',
+    pattern: `%d{yyyy-MM-dd hh:mm:ss.SSS}${useCategory ? ' %c' : ''} %f{1}:%l %p %m`,
   }
   log4js.configure({
     appenders: {
@@ -24,6 +26,9 @@ const init = (name) => {
       default: { appenders: ['filterError', 'file', 'console'], level: LEVEL_LOGGER, enableCallStack: true },
     },
   })
+
+  logger = log4js.getLogger()
+  return logger
 }
 
 const shutdown = async () => {
@@ -34,8 +39,14 @@ const shutdown = async () => {
   })
 }
 
-const getLogger = (category = '') => {
-  return log4js.getLogger(category)
+/**
+ * note: must call it after init
+ *
+ * @param {*} category
+ * @returns
+ */
+const getLogger = (category) => {
+  return category ? log4js.getLogger(category) : logger
 }
 
 module.exports = {
