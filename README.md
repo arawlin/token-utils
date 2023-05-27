@@ -8,16 +8,34 @@ transfer event
 
 ## mevLike
 
-sell faster than him when he approve a token, so we need to approve immediately after bought a token
+### config
 
-check `removeLiquidity` `removeLiquidityWithPermit` etc in mempool, and sell all token with **more gasPrice than remove liquidity**.
-
-create mongodb index:
+- create mongodb index
 
 `idx_hashTransaction`
 `idx_blockNumber`
 
+### process
+
+- target
 - buy
+
   - when
   - which token
-  - how much
+  - how
+    - check safety
+    - how many amounts
+
+- sell in v2
+
+  - when
+
+    - mev sell
+
+    - `removeLiquidity` `removeLiquidityWithPermit` etc of router
+
+      - check token address
+
+    - contract token that be called to `any method`
+      - not approve
+      - not transfer
