@@ -33,6 +33,7 @@ taskWrap(task, require('./tasks/eventToken'))
 taskWrap(task, require('./tasks/mevLike'))
 taskWrap(task, require('./tasks/mevLikeMemPool'))
 taskWrap(task, require('./tasks/mevLikeMemPoolRPC'))
+taskWrap(task, require('./tasks/mevLikeMemPoolBloxRoute'))
 taskWrap(task, require('./tasks/mevActSimple'))
 
 module.exports = {
