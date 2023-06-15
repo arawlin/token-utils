@@ -1,10 +1,10 @@
 const NAME_FILE = __filename.split('.')[0].slice(__dirname.length + 1)
-const logger = require('../libs/logger').getLogger()
+const logger = require('../../libs/logger').getLogger()
 
-const { sleep, reverseArrayConst, timeOver } = require('../libs')
-const emailSend = require('../libs/emailSend')
-const uniswapUtils = require('../libs/uniswapUtils')
-const dbTransaction = require('../db/dbTransaction')
+const { sleep, reverseArrayConst, timeOver } = require('../../libs')
+const emailSend = require('../../libs/emailSend')
+const uniswapUtils = require('../../libs/uniswapUtils')
+const dbTransaction = require('../../db/dbTransaction')
 
 const TIME_LOOP = 0.5 * 1000
 

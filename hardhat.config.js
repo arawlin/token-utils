@@ -30,11 +30,15 @@ taskWrap(task, require('./tasks/transfer'))
 taskWrap(task, require('./tasks/transferAll'))
 taskWrap(task, require('./tasks/eventAddress'))
 taskWrap(task, require('./tasks/eventToken'))
+
 taskWrap(task, require('./tasks/mevLike'))
-taskWrap(task, require('./tasks/mevLikeMemPool'))
-taskWrap(task, require('./tasks/mevLikeMemPoolRPC'))
-taskWrap(task, require('./tasks/mevLikeMemPoolBloxRoute'))
-taskWrap(task, require('./tasks/mevActSimple'))
+taskWrap(task, require('./tasks/mev/mevLikeBlock'))
+taskWrap(task, require('./tasks/mev/mevLikeMemPool'))
+taskWrap(task, require('./tasks/mev/mevLikeMemPoolRPC'))
+taskWrap(task, require('./tasks/mev/mevLikeMemPoolBloxRoute'))
+taskWrap(task, require('./tasks/mev/mevLikeMemPoolAlchemy'))
+
+taskWrap(task, require('./tasks/mev/mevActSimple'))
 
 module.exports = {
   // defaultNetwork: 'hardhat',
