@@ -1,12 +1,12 @@
 const log4js = require('log4js')
 
-// require('dotenv').config()
+require('dotenv').config()
 const LEVEL_LOGGER = process.env.LEVEL_LOGGER
 console.log('LEVEL_LOGGER', LEVEL_LOGGER)
 
 let logger
 
-const init = (name, useCategory) => {
+const init = (name = 'app', useCategory) => {
   const layout = {
     type: 'pattern',
     pattern: `%d{yyyy-MM-dd hh:mm:ss.SSS}${useCategory ? ' %c' : ''} %f{1}:%M:%l %p %m`,
