@@ -14,8 +14,8 @@ const init = (name, useCategory) => {
   log4js.configure({
     appenders: {
       console: { type: 'stdout', layout },
-      file: { type: 'dateFile', filename: name + '.log', layout, numBackups: 7, compress: false },
-      fileError: { type: 'file', filename: name + '.error.log', layout, maxLogSize: '20M', backups: 3 },
+      file: { type: 'dateFile', filename: 'logs/' + name + '.log', layout, numBackups: 7, compress: false },
+      fileError: { type: 'file', filename: 'logs/' + name + '.error.log', layout, maxLogSize: '20M', backups: 3 },
       filterError: {
         type: 'logLevelFilter',
         appender: 'fileError',
