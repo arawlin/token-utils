@@ -19,6 +19,10 @@ const adaptNetwork = (httpURL) => {
 }
 
 extendEnvironment((env) => {
+  if (!env.network.config.urlws) {
+    console.log('urlws not config')
+    return
+  }
   env.Web3 = lazyFunction(() => require('web3'))
   env.web3 = lazyObject(() => {
     const Web3 = require('web3')
