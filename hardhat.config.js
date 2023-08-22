@@ -2,7 +2,7 @@ require('dotenv').config()
 
 require('@nomiclabs/hardhat-waffle')
 require('@nomiclabs/hardhat-solhint')
-// require('hardhat-gas-reporter')
+require('hardhat-gas-reporter')
 require('solidity-coverage')
 require('@openzeppelin/hardhat-upgrades')
 require('./plugins/hardhat-web3-ws')
@@ -51,10 +51,11 @@ module.exports = {
       timeout: 60000,
     },
   },
-  // gasReporter: {
-  //   enabled: true,
-  //   currency: 'USD',
-  // },
+  gasReporter: {
+    enabled: true,
+    currency: 'USD',
+    gasPrice: 20,
+  },
   solidity: {
     version: '0.8.4',
     settings: {
