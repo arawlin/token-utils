@@ -36,6 +36,7 @@ taskWrap(task, require('./tasks/mev/mevLikeMemPool'))
 taskWrap(task, require('./tasks/mev/mevLikeMemPoolRPC'))
 taskWrap(task, require('./tasks/mev/mevLikeMemPoolBloxRoute'))
 taskWrap(task, require('./tasks/mev/mevLikeMemPoolAlchemy'))
+taskWrap(task, require('./tasks/mev/mevICO'))
 
 taskWrap(task, require('./tasks/mev/mevActSimple'))
 
