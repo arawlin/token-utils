@@ -3,16 +3,22 @@ const logger = require('../../libs/logger').getLogger()
 
 const { sleep, timeNow, timeThen, timeElapse } = require('../../libs')
 const uniswapUtils = require('../../libs/uniswapUtils')
+const etherUtils = require('../../libs/etherUtils')
 
 const TIME_LOOP = 0.2 * 1000
 const MULTI_AMOUNT_OUT_MIN = 10
-const GAS_USED = 152121
+const GAS_USED = 193471
+const GAS_PRICE_PERCENT = 110
 
 const action = async ({ ico, amt }, { ethers, web3 }) => {
   logger.info('ethers', await ethers.provider.getNetwork())
   logger.info('web3', web3.currentProvider.url)
 
-  const gasPricePercent = ethers.BigNumber.from(110)
+  const signer = (await ethers.getSigners())[0]
+  const addrSigner = await signer.getAddress()
+  await etherUtils.logBalance(ethers, addrSigner, 'signer')
+
+  const gasPricePercent = ethers.BigNumber.from(GAS_PRICE_PERCENT)
   const path = [process.env.addrWETH, ico]
 
   // const amtIn = ethers.utils.parseUnits(amt)
@@ -20,7 +26,7 @@ const action = async ({ ico, amt }, { ethers, web3 }) => {
   // const amtOutMin = ethers.BigNumber.from(amountOuts[1]).div(ethers.BigNumber.from(MULTI_AMOUNT_OUT_MIN))
   // logger.info(`amtOutRaw: ${amountOuts[1].toString()}, amtOut: ${ethers.utils.formatUnits(amountOuts[1], 9)}, amtOutMin: ${amtOutMin.toString()}`)
 
-  const amtOutMin = ethers.BigNumber.from('44899015330643')
+  const amtOutMin = ethers.BigNumber.from('575311988123804')
 
   let succ = false
   let last = await ethers.provider.getBlockNumber()
