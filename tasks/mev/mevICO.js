@@ -5,14 +5,14 @@ const { sleep, timeNow, timeThen, timeElapse } = require('../../libs')
 const uniswapUtils = require('../../libs/uniswapUtils')
 const etherUtils = require('../../libs/etherUtils')
 
-const TIME_LOOP = 0.2 * 1000
+const TIME_LOOP = 0.5 * 1000
 const MULTI_AMOUNT_OUT_MIN = 10
 const GAS_USED = 193471
 const GAS_PRICE_PERCENT = 110
 
 const action = async ({ ico, amt }, { ethers, web3 }) => {
   logger.info('ethers', await ethers.provider.getNetwork())
-  logger.info('web3', web3.currentProvider.url)
+  // logger.info('web3', web3.currentProvider.url)
 
   const signer = (await ethers.getSigners())[0]
   const addrSigner = await signer.getAddress()
@@ -26,29 +26,25 @@ const action = async ({ ico, amt }, { ethers, web3 }) => {
   // const amtOutMin = ethers.BigNumber.from(amountOuts[1]).div(ethers.BigNumber.from(MULTI_AMOUNT_OUT_MIN))
   // logger.info(`amtOutRaw: ${amountOuts[1].toString()}, amtOut: ${ethers.utils.formatUnits(amountOuts[1], 9)}, amtOutMin: ${amtOutMin.toString()}`)
 
-  const amtOutMin = ethers.BigNumber.from('575311988123804')
+  const amtOutMin = ethers.BigNumber.from('1033094761703660')
 
-  let succ = false
   let last = await ethers.provider.getBlockNumber()
   while (true) {
     const timeStart = new Date().getTime()
     try {
       const cur = await ethers.provider.getBlockNumber()
+      logger.info(last, '--------------')
       if (cur === last) {
         continue
       }
       last = cur
 
       // swap
-      succ = await uniswapUtils.swapExactETHForTokens(ethers, path, amt, gasPricePercent, { gasUsed: ethers.BigNumber.from(GAS_USED) }, amtOutMin, true)
+      await uniswapUtils.swapExactETHForTokens(ethers, path, amt, gasPricePercent, { gasUsed: ethers.BigNumber.from(GAS_USED) }, amtOutMin, false)
     } catch (e) {
-      logger.error(last, e.code)
+      logger.error(last, e)
     }
     logger.info(last, `elapse - ${timeElapse(timeStart)}`, '--------------')
-
-    if (succ) {
-      break
-    }
 
     await sleep(TIME_LOOP)
   }

@@ -49,7 +49,7 @@ module.exports = {
       url: process.env.URL_RPC,
       urlws: process.env.URL_RPC_WS,
       accounts: process.env.ACCOUNTS ? process.env.ACCOUNTS.split(',') : undefined,
-      timeout: 60000,
+      timeout: 10000,
     },
   },
   gasReporter: {

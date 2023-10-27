@@ -103,20 +103,26 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
   const gasLimit = gasLimitRaw.mul(MULITY_GAS_LIMIT)
   logger.info('gasLimit', gasLimitRaw, gasLimit)
 
-  const tx = await router.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice, gasLimit })
-  logger.info(`swapExactETHForTokens - hash: ${tx.hash}, value: ${valueETH}`)
-  const txr = await tx.wait()
-  logger.info(`swapExactETHForTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
+  logger.info(`swapExactETHForTokens - calling`)
+  router.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice, gasLimit }).then((tx) => {
+    logger.info(`swapExactETHForTokens - hash: ${tx.hash}, value: ${valueETH}`)
+    logger.info(`swapExactETHForTokens - called`)
+  })
 
-  const addrToken = path[path.length - 1]
-  const token = new ethers.Contract(addrToken, abiERC20, signer)
-  const nmToken = await token.symbol()
-  const balToken = await token.balanceOf(signer.address)
-  const decimalToken = await token.decimals()
-  const priceToken = calcPriceToken(balToken, decimalToken, value)
-  logger.info(`${nmToken} - balToken: ${ethers.utils.formatUnits(balToken, decimalToken)}, price: ${priceToken.toString()}`)
+  // const tx = await router.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice, gasLimit })
+  // logger.info(`swapExactETHForTokens - hash: ${tx.hash}, value: ${valueETH}`)
+  // const txr = await tx.wait()
+  // logger.info(`swapExactETHForTokens - gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
 
-  return txr
+  // const addrToken = path[path.length - 1]
+  // const token = new ethers.Contract(addrToken, abiERC20, signer)
+  // const nmToken = await token.symbol()
+  // const balToken = await token.balanceOf(signer.address)
+  // const decimalToken = await token.decimals()
+  // const priceToken = calcPriceToken(balToken, decimalToken, value)
+  // logger.info(`${nmToken} - balToken: ${ethers.utils.formatUnits(balToken, decimalToken)}, price: ${priceToken.toString()}`)
+
+  // return txr
 }
 
 const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
