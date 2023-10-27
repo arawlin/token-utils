@@ -20,29 +20,25 @@ const action = async ({ ico, amt }, { ethers, web3 }) => {
   // const amtOutMin = ethers.BigNumber.from(amountOuts[1]).div(ethers.BigNumber.from(MULTI_AMOUNT_OUT_MIN))
   // logger.info(`amtOutRaw: ${amountOuts[1].toString()}, amtOut: ${ethers.utils.formatUnits(amountOuts[1], 9)}, amtOutMin: ${amtOutMin.toString()}`)
 
-  const amtOutMin = ethers.BigNumber.from('44899015330643') // 0.1bnb
+  const amtOutMin = ethers.BigNumber.from('44899015330643')
 
   let succ = false
   let last = await ethers.provider.getBlockNumber()
   while (true) {
-    do {
-      try {
-        const timeStart = new Date().getTime()
-
-        const cur = await ethers.provider.getBlockNumber()
-        if (cur === last) {
-          break
-        }
-        last++
-
-        // swap
-        succ = await uniswapUtils.swapExactETHForTokens(ethers, path, amt, gasPricePercent, { gasUsed: ethers.BigNumber.from(GAS_USED) }, amtOutMin, true)
-
-        logger.info(last, cur, `elapse - ${timeElapse(timeStart)}`)
-      } catch (e) {
-        logger.error(last, e)
+    const timeStart = new Date().getTime()
+    try {
+      const cur = await ethers.provider.getBlockNumber()
+      if (cur === last) {
+        continue
       }
-    } while (false)
+      last = cur
+
+      // swap
+      succ = await uniswapUtils.swapExactETHForTokens(ethers, path, amt, gasPricePercent, { gasUsed: ethers.BigNumber.from(GAS_USED) }, amtOutMin, true)
+    } catch (e) {
+      logger.error(last, e.code)
+    }
+    logger.info(last, `elapse - ${timeElapse(timeStart)}`, '--------------')
 
     if (succ) {
       break

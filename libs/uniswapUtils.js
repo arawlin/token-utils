@@ -85,13 +85,15 @@ const swapExactETHForTokens = async (ethers, path, valueETH, gasPricePercent = R
     // amountOutMin = ethers.constants.Zero
   }
 
+  if (needCheck) {
+    await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
+  }
+
   let gasLimitRaw
   if (txLike?.gasUsed) {
     gasLimitRaw = BigNumber.from(txLike.gasUsed)
   } else {
-    if (needCheck) {
-      gasLimitRaw = await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
-    }
+    gasLimitRaw = await router.estimateGas.swapExactETHForTokens(amountOutMin, path, signer.address, deadline, { value, gasPrice })
   }
   if (!gasLimitRaw) {
     logger.error('gasLimitRaw not set')
