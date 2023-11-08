@@ -12,8 +12,10 @@ const createWallets = async (ethers, dir, pass, number) => {
   for (let i = 0; i < number; ++i) {
     const w = ethers.Wallet.createRandom()
     const k = await w.encrypt(pass)
-    const n = `${new Date().toISOString()}-${w.address}`
+    const n = `${w.address}-${new Date().toISOString()}`
     await fs.writeFile(path.join(dir, n), k)
+
+    await fs.appendFile(path.join(dir, '.a'), w.address + '\n')
 
     console.log(`${w.address} - ${i}`)
   }
