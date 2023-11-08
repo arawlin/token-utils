@@ -13,7 +13,7 @@ describe('mq test', () => {
     await client.close()
   })
 
-  it.skip('pulsar test producer', async () => {
+  it('pulsar test producer', async () => {
     const producer = await client.createProducer({
       topic: 'my-topic', // or 'my-tenant/my-namespace/my-topic' to specify topic's tenant and namespace
     })
@@ -34,15 +34,21 @@ describe('mq test', () => {
     await producer.close()
   })
 
-  it('pulsar test consumer', async () => {
+  it.skip('pulsar test consumer', async () => {
     const consumer = await client.subscribe({
       topic: 'my-topic',
       subscription: 'my-subscription',
     })
 
-    const msg = await consumer.receive()
-    console.log(msg.getData().toString())
-    consumer.acknowledge(msg)
+    while (true) {
+      const msg = await consumer.receive()
+      console.log(msg, msg?.getData())
+      if (!msg || !msg?.getData()) {
+        break
+      }
+      console.log(msg.getData().toString())
+      consumer.acknowledge(msg)
+    }
 
     await consumer.close()
   })
