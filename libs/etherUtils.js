@@ -2,6 +2,8 @@ const fs = require('fs/promises')
 const path = require('path')
 const { DEBUG } = require('./constants')
 
+const suffixKeystore = '.keystore'
+
 const filterABI = (abi, name) => {
   return abi.filter((e) => e.name === name)?.[0]
 }
@@ -13,7 +15,7 @@ const createWallets = async (ethers, dir, pass, number) => {
     const w = ethers.Wallet.createRandom()
     const k = await w.encrypt(pass)
     const n = `${w.address}-${new Date().toISOString()}`
-    await fs.writeFile(path.join(dir, n), k)
+    await fs.writeFile(path.join(dir, n + suffixKeystore), k)
 
     await fs.appendFile(path.join(dir, '.a'), w.address + '\n')
 
@@ -54,9 +56,9 @@ const loadWallets = async (ethers, dir, pass, deal) => {
   const ws = []
   const files = await fs.readdir(dir)
   for (const fn of files) {
-    // if (!fn.endsWith('.keystore')) {
-    //   continue
-    // }
+    if (!fn.endsWith(suffixKeystore)) {
+      continue
+    }
     try {
       const ct = await fs.readFile(path.join(dir, fn), { encoding: 'utf-8' })
 
