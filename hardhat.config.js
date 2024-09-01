@@ -30,6 +30,7 @@ taskWrap(task, require('./tasks/transfer'))
 taskWrap(task, require('./tasks/transferAll'))
 taskWrap(task, require('./tasks/eventAddress'))
 taskWrap(task, require('./tasks/eventToken'))
+taskWrap(task, require('./tasks/inscribe'))
 
 taskWrap(task, require('./tasks/mev/mevLikeBlock'))
 taskWrap(task, require('./tasks/mev/mevLikeMemPool'))

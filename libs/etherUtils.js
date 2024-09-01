@@ -2,6 +2,8 @@ const fs = require('fs/promises')
 const path = require('path')
 const { DEBUG } = require('./constants')
 
+const suffixKeystore = '.keystore'
+
 const filterABI = (abi, name) => {
   return abi.filter((e) => e.name === name)?.[0]
 }
@@ -12,8 +14,10 @@ const createWallets = async (ethers, dir, pass, number) => {
   for (let i = 0; i < number; ++i) {
     const w = ethers.Wallet.createRandom()
     const k = await w.encrypt(pass)
-    const n = `${new Date().toISOString()}-${w.address}`
-    await fs.writeFile(path.join(dir, n), k)
+    const n = `${w.address}-${new Date().toISOString()}`
+    await fs.writeFile(path.join(dir, n + suffixKeystore), k)
+
+    await fs.appendFile(path.join(dir, '.a'), w.address + '\n')
 
     console.log(`${w.address} - ${i}`)
   }
@@ -52,9 +56,9 @@ const loadWallets = async (ethers, dir, pass, deal) => {
   const ws = []
   const files = await fs.readdir(dir)
   for (const fn of files) {
-    // if (!fn.endsWith('.keystore')) {
-    //   continue
-    // }
+    if (!fn.endsWith(suffixKeystore)) {
+      continue
+    }
     try {
       const ct = await fs.readFile(path.join(dir, fn), { encoding: 'utf-8' })
 
@@ -159,15 +163,16 @@ const logBalanceToken = async (ethers, contract, address, label = '', decimals =
  * @param {*} value -1: all balance except fee, 0: param error
  * @returns
  */
-const transfer = async (ethers, signer, to, value, onFinish) => {
+const transfer = async (ethers, signer, to, value, onFinish, unrestrict, data) => {
   console.log('transfer --------- ')
 
-  if (signer.address.toLowerCase() === to.toLowerCase()) {
+  if (!unrestrict && signer.address.toLowerCase() === to.toLowerCase()) {
     console.log(`from and to is the same address`)
     return false
   }
 
-  const gasLimit = ethers.BigNumber.from('21001')
+  const gasLimit = ethers.BigNumber.from('21944')
+  // const gasLimit = ethers.BigNumber.from('21001')
   const feeData = await signer.provider.getFeeData()
   const fee = gasLimit.mul(feeData.maxFeePerGas ?? feeData.gasPrice)
   console.log(
@@ -185,7 +190,7 @@ const transfer = async (ethers, signer, to, value, onFinish) => {
     value = bal.sub(fee)
   }
 
-  if (ethers.BigNumber.from('0').gte(value)) {
+  if (!unrestrict && ethers.BigNumber.from('0').gte(value)) {
     console.log(`lte 0`)
     return false
   }
@@ -200,9 +205,9 @@ const transfer = async (ethers, signer, to, value, onFinish) => {
 
   let req
   if (feeData.maxFeePerGas) {
-    req = { to, value, gasLimit, maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas }
+    req = { to, value, data, gasLimit, maxFeePerGas: feeData.maxFeePerGas, maxPriorityFeePerGas: feeData.maxPriorityFeePerGas }
   } else {
-    req = { to, value, gasLimit, gasPrice: feeData.gasPrice }
+    req = { to, value, data, gasLimit, gasPrice: feeData.gasPrice }
   }
   const res = await signer.sendTransaction(req)
   const rec = await res.wait()
