@@ -2,7 +2,7 @@ require('dotenv').config()
 
 require('@nomiclabs/hardhat-waffle')
 require('@nomiclabs/hardhat-solhint')
-require('hardhat-gas-reporter')
+// require('hardhat-gas-reporter')
 require('solidity-coverage')
 require('@openzeppelin/hardhat-upgrades')
 require('./plugins/hardhat-web3-ws')
@@ -41,8 +41,8 @@ taskWrap(task, require('./tasks/mev/mevICO'))
 taskWrap(task, require('./tasks/mev/mevActSimple'))
 
 module.exports = {
-  // defaultNetwork: 'hardhat',
-  defaultNetwork: 'inconfig',
+  defaultNetwork: 'hardhat',
+  // defaultNetwork: 'inconfig',
   networks: {
     inconfig: {
       chainId: Number(process.env.ID_CHAIN),
@@ -58,13 +58,20 @@ module.exports = {
     gasPrice: 20,
   },
   solidity: {
-    version: '0.8.4',
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
+    compilers: [
+      {
+        version: '0.8.4',
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 200,
+          },
+          debug: {
+            revertStrings: 'debug', // "default", "strip", "debug" and "verboseDebug"
+          },
+        },
       },
-    },
+    ],
   },
   mocha: {
     timeout: 40000,
