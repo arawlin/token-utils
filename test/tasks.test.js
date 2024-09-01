@@ -5,7 +5,7 @@ const fixtures = require('./fixtures')
 const utils = require('../libs/etherUtils')
 
 const taskTransfer = require('../tasks/transfer')
-const taskMevLikeMemPool = require('../tasks/mevLikeMemPool')
+const taskMevLikeMemPool = require('../tasks/mev/mevLikeMemPool')
 
 const { DIR_RES_KEYSTORES } = require('../libs/constants')
 
