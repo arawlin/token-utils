@@ -191,6 +191,49 @@ const swapExactTokensForETHSupportingFeeOnTransferTokens = async (
   return true
 }
 
+const swapExactTokensForTokens = async (ethers, path, amountIn, gasPricePercent = RATIO_MAX, txLike, amountOutMin) => {
+  const signer = (await ethers.getSigners())[0]
+  const router = new ethers.Contract(process.env.addrUniswapV2Router02, abiUniswapV2Router02, signer)
+
+  const deadline = timeIntervalSec(DELAY_DEADLINE)
+
+  let gasPrice = await ethers.provider.getGasPrice()
+  gasPrice = gasPrice.mul(gasPricePercent).div(RATIO_MAX)
+  logger.info('gasPrice', ethers.utils.formatUnits(gasPrice, 'gwei'))
+
+  if (!amountOutMin) {
+    const amounts = await router.getAmountsOut(amountIn, path)
+    amountOutMin = amounts[path.length - 1].mul(RATIO_MAX.sub(RATIO_SLIPPAGE)).div(RATIO_MAX)
+    // amountOutMin = ethers.constants.Zero
+  }
+
+  let gasLimitRaw = await router.estimateGas.swapExactTokensForTokens(amountIn, amountOutMin, path, signer.address, deadline, { gasPrice })
+  if (txLike?.gasUsed) {
+    gasLimitRaw = BigNumber.from(txLike.gasUsed)
+  }
+  if (!gasLimitRaw) {
+    logger.error('gasLimitRaw not set')
+    return
+  }
+
+  const gasLimit = gasLimitRaw.mul(MULITY_GAS_LIMIT)
+  logger.info('gasLimit', gasLimitRaw, gasLimit)
+
+  const tx = await router.swapExactTokensForTokens(amountIn, amountOutMin, path, signer.address, deadline, { gasPrice, gasLimit })
+  const txr = await tx.wait()
+  logger.info(`swapExactTokensForTokens - hash: ${tx.hash}, gasFee: ${ethers.utils.formatEther(tx.gasPrice.mul(txr?.gasUsed ?? ethers.constants.Zero))}`)
+
+  const addrToken = path[path.length - 1]
+  const token = new ethers.Contract(addrToken, abiERC20, signer)
+  const nmToken = await token.symbol()
+  const balToken = await token.balanceOf(signer.address)
+  const decimalToken = await token.decimals()
+  const priceToken = calcPriceToken(balToken, decimalToken, amountIn)
+  logger.info(`${nmToken} - balToken: ${ethers.utils.formatUnits(balToken, decimalToken)}, price: ${priceToken.toString()}`)
+
+  return txr
+}
+
 module.exports = {
   calcPriceToken,
   approveRouter,
@@ -199,4 +242,6 @@ module.exports = {
   getAmountsOut,
   swapExactETHForTokens,
   swapExactTokensForETHSupportingFeeOnTransferTokens,
+
+  swapExactTokensForTokens,
 }

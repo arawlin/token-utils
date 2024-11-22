@@ -93,7 +93,7 @@ describe('uniswap', () => {
     console.log(nmToken, ethers.utils.formatUnits(balToken, decimalToken), value, priceToken.toString(), ethers.constants.MaxUint256.toHexString())
   })
 
-  it('mongdb transaction', async () => {
+  it.skip('mongdb transaction', async () => {
     const addrFrom = '0xAf2358e98683265cBd3a48509123d390dDf54534'
     let idLast
     while (true) {
@@ -164,5 +164,17 @@ describe('uniswap', () => {
 
     res = await web3.eth.txpool.contentFrom('0x154421b5abFd5FC12b16715E91d564AA47c8DDee')
     console.log(res)
+  })
+
+  it.only('swapExactTokensForTokens', async () => {
+    const signer = (await ethers.getSigners())[0]
+    const bal = await signer.getBalance()
+    console.log('bal', signer.address, ethers.utils.formatEther(bal))
+
+    const path = ['', '']
+
+    await uni.approveRouter(ethers, path[0])
+    await uni.approveRouter(ethers, path[1])
+    await uni.swapExactTokensForTokens(ethers, path, ethers.utils.parseEther('0.001'), ethers.BigNumber.from(110))
   })
 })

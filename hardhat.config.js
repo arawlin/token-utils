@@ -42,8 +42,8 @@ taskWrap(task, require('./tasks/mev/mevICO'))
 taskWrap(task, require('./tasks/mev/mevActSimple'))
 
 module.exports = {
-  defaultNetwork: 'hardhat',
-  // defaultNetwork: 'inconfig',
+  // defaultNetwork: 'hardhat',
+  defaultNetwork: 'inconfig',
   networks: {
     inconfig: {
       chainId: Number(process.env.ID_CHAIN),
